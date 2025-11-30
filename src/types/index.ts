@@ -1,18 +1,28 @@
 export interface Quote {
   id: number;
   text: string;
-  source: "Qur'an" | "Hadith";
-  category: "motivation" | "prayer" | "guidance" | "remembrance" | "wisdom";
+  source: string;
   reference: string;
+  category: "motivation" | "prayer" | "guidance" | "remembrance" | "wisdom";
+  arabic?: string;
 }
 
 export interface DailyImage {
   id: number;
-  unlockDate: Date;
-  isUnlocked: boolean;
+  day: number;
+  path: string;
+  alt: string;
+  description?: string;
 }
 
-export type Category = {
-  id: string;
-  label: string;
-};
+export interface ThemeContextType {
+  isDark: boolean;
+  toggle: () => void;
+}
+
+export interface FavoritesContextType {
+  favorites: number[];
+  addFavorite: (id: number) => void;
+  removeFavorite: (id: number) => void;
+  isFavorite: (id: number) => boolean;
+}
