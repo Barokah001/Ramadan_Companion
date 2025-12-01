@@ -1,96 +1,105 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Heart, RefreshCw } from "lucide-react";
-import { Header } from "./components/Header";
-import { QuoteCard } from "./components/QuoteCard";
-import { ImageSlider } from "./components/ImageSlider";
-import { QUOTES } from "./lib/quotes";
-import { useFavorites } from "./contexts/FavoritesContext";
-import { useTheme } from "./contexts/ThemeContext";
+// src/App.tsx
 
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Header } from './components/Header';
+import { QuoteCard } from './components/QuoteCard';
+import { ImageGallery } from './components/ImageGallery';
+import { FavoritesList } from './components/FavoritesList';
+import { quotes } from './data/quotes';
 
 const App: React.FC = () => {
-  const { isDark } = useTheme();
-  const { favorites } = useFavorites();
-  const [currentQuote, setCurrentQuote] = useState(QUOTES[0]);
-  const [showFavorites, setShowFavorites] = useState(false);
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
 
-  const bgColor = isDark
-    ? "bg-gradient-to-br from-amber-950 via-red-950 to-amber-900"
-    : "bg-gradient-to-br from-amber-50 via-rose-50 to-beige-100";
-  const textColor = isDark ? "text-amber-50" : "text-amber-950";
-
-  const getRandomQuote = () => {
-    const randomIndex = Math.floor(Math.random() * QUOTES.length);
-    setCurrentQuote(QUOTES[randomIndex]);
+  const nextQuote = () => {
+    setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
   };
 
-  const favoriteQuotes = QUOTES.filter((q) => favorites.includes(q.id));
+  const prevQuote = () => {
+    setCurrentQuoteIndex((prev) => (prev - 1 + quotes.length) % quotes.length);
+  };
+
+  const randomQuote = () => {
+    let newIndex;
+    do {
+      newIndex = Math.floor(Math.random() * quotes.length);
+    } while (newIndex === currentQuoteIndex && quotes.length > 1);
+    setCurrentQuoteIndex(newIndex);
+  };
 
   return (
-    <div
-      className={`min-h-screen ${bgColor} ${textColor} px-4 py-8 transition-colors duration-500`}
-    >
-      <div className="max-w-7xl mx-auto">
-        <Header />
+    <div className="min-h-screen bg-[#F5EBDC]">
+      <Header />
 
-        {/* Quote Section */}
+      <main className="max-w-6xl mx-auto px-6 py-12">
+        {/* Daily Wisdom Section */}
         <section className="mb-16">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className={`text-3xl font-bold ${textColor}`}>Daily Quote</h2>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={getRandomQuote}
-              className={`px-6 py-3 rounded-full ${
-                isDark
-                  ? "bg-amber-800 hover:bg-amber-700"
-                  : "bg-amber-200 hover:bg-amber-300"
-              } ${textColor} font-semibold flex items-center gap-2 shadow-lg`}
+          <div className="mb-6">
+            <h2 
+              className="text-3xl md:text-4xl font-bold text-[#5C2E2E] mb-2" 
+              style={{ fontFamily: 'Playfair Display, serif' }}
             >
-              <RefreshCw className="w-5 h-5" />
-              New Quote
-            </motion.button>
+              Daily Wisdom
+            </h2>
+            <p className="text-base text-[#8B4545]">
+              Discover inspiration from the Quran and Hadith
+            </p>
           </div>
 
-          <AnimatePresence mode="wait">
-            <QuoteCard key={currentQuote.id} quote={currentQuote} />
-          </AnimatePresence>
+          {/* Quote Display */}
+          <div className="mb-6">
+            <QuoteCard quote={quotes[currentQuoteIndex]} />
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="flex justify-center items-center gap-4">
+            <button
+              onClick={prevQuote}
+              className="p-3 rounded-full bg-white shadow-md border border-[#5C2E2E]/15 hover:bg-[#EAD7C0] transition-colors"
+              aria-label="Previous quote"
+            >
+              <ChevronLeft size={24} className="text-[#5C2E2E]" />
+            </button>
+
+            <button
+              onClick={randomQuote}
+              className="p-3 rounded-full bg-[#8B4545] shadow-md hover:bg-[#5C2E2E] transition-colors"
+              aria-label="Random quote"
+            >
+              <Sparkles size={24} className="text-white" />
+            </button>
+
+            <button
+              onClick={nextQuote}
+              className="p-3 rounded-full bg-white shadow-md border border-[#5C2E2E]/15 hover:bg-[#EAD7C0] transition-colors"
+              aria-label="Next quote"
+            >
+              <ChevronRight size={24} className="text-[#5C2E2E]" />
+            </button>
+          </div>
+
+          {/* Counter */}
+          <p className="text-center mt-4 text-sm text-[#8B4545]">
+            {currentQuoteIndex + 1} of {quotes.length}
+          </p>
         </section>
 
         {/* Favorites Section */}
-        {favorites.length > 0 && (
-          <section className="mb-16">
-            <button
-              onClick={() => setShowFavorites(!showFavorites)}
-              className={`text-2xl font-bold ${textColor} mb-6 flex items-center gap-2 hover:opacity-80 transition-opacity`}
-            >
-              <Heart className="w-6 h-6 fill-current text-red-500" />
-              Favorite Quotes ({favorites.length})
-            </button>
+        <FavoritesList />
 
-            <AnimatePresence>
-              {showFavorites && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                >
-                  {favoriteQuotes.map((quote) => (
-                    <QuoteCard key={quote.id} quote={quote} />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </section>
-        )}
+        {/* Image Gallery Section */}
+        <ImageGallery />
+      </main>
 
-        {/* Image Slider Section */}
-        <section>
-          <ImageSlider />
-        </section>
-      </div>
+      {/* Footer */}
+      <footer className="text-center py-10 border-t border-[#5C2E2E]/15 bg-white">
+        <p className="text-base text-[#8B4545] mb-2">
+          May this Ramadan bring peace, blessings, and spiritual growth
+        </p>
+        <p className="text-sm text-[#A05A5A]">
+          Ramadan Mubarak 🌙
+        </p>
+      </footer>
     </div>
   );
 };

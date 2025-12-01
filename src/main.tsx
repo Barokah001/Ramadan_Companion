@@ -1,17 +1,15 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App";
-import "./index.css";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import { FavoritesProvider } from "./contexts/FavoritesContext";
-;
+// src/main.tsx
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import { FavoritesProvider } from './context/FavoritesContext';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <FavoritesProvider>
-        <App />
-      </FavoritesProvider>
-    </ThemeProvider>
+    <FavoritesProvider>
+      <App />
+    </FavoritesProvider>
   </React.StrictMode>
 );

@@ -1,47 +1,55 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { type FavoritesContextType } from "../types";
+// src/context/FavoritesContext.tsx
 
-const FavoritesContext = createContext<FavoritesContextType | undefined>(
-  undefined
-);
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+interface FavoritesContextType {
+  favorites: number[];
+  toggleFavorite: (id: number) => void;
+  isFavorite: (id: number) => boolean;
+  clearFavorites: () => void;
+}
+
+const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
+
+export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [favorites, setFavorites] = useState<number[]>(() => {
-    const saved = localStorage.getItem("favorites");
+    const saved = localStorage.getItem('ramadan-favorites');
     return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
+    localStorage.setItem('ramadan-favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  const addFavorite = (id: number) => {
-    setFavorites((prev) => [...prev, id]);
+  const toggleFavorite = (id: number) => {
+    setFavorites(prev => 
+      prev.includes(id) 
+        ? prev.filter(fav => fav !== id)
+        : [...prev, id]
+    );
   };
 
-  const removeFavorite = (id: number) => {
-    setFavorites((prev) => prev.filter((fav) => fav !== id));
+  const isFavorite = (id: number): boolean => {
+    return favorites.includes(id);
   };
 
-  const isFavorite = (id: number) => favorites.includes(id);
+  const clearFavorites = () => {
+    setFavorites([]);
+  };
 
   return (
-    <FavoritesContext.Provider
-      value={{ favorites, addFavorite, removeFavorite, isFavorite }}
-    >
+    <FavoritesContext.Provider value={{ favorites, toggleFavorite, isFavorite, clearFavorites }}>
       {children}
     </FavoritesContext.Provider>
   );
 };
 
-export const useFavorites = () => {
+export const useFavorites = (): FavoritesContextType => {
   const context = useContext(FavoritesContext);
   if (!context) {
-    throw new Error("useFavorites must be used within FavoritesProvider");
+    throw new Error('useFavorites must be used within a FavoritesProvider');
   }
   return context;
 };

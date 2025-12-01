@@ -1,135 +1,53 @@
-import React from "react";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { type Quote } from "../types";
+// src/components/FavoritesList.tsx
 
-interface FavoritesListProps {
-  favorites: number[];
-  quotes: Quote[];
-  darkMode: boolean;
-  isOpen: boolean;
-  onToggle: () => void;
-  onRemoveFavorite: (id: number) => void;
-}
+import React from 'react';
+import { Heart, Trash2 } from 'lucide-react';
+import { QuoteCard } from './QuoteCard';
+import { useFavorites } from '../contexts/FavoritesContext';
+import { quotes } from '../lib/quotes';
 
-export const FavoritesList: React.FC<FavoritesListProps> = ({
-  favorites,
-  quotes,
-  darkMode,
-  isOpen,
-  onToggle,
-  onRemoveFavorite,
-}) => {
-  const favoriteQuotes = quotes.filter((q) => favorites.includes(q.id));
+export const FavoritesList: React.FC = () => {
+  const { favorites, clearFavorites } = useFavorites();
+  const favoriteQuotes = quotes.filter(quote => favorites.includes(quote.id));
+
+  if (favorites.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="mt-8">
-      <motion.button
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
-        onClick={onToggle}
-        className={`w-full py-4 px-6 rounded-2xl font-medium transition-all duration-300 flex items-center justify-between ${
-          darkMode
-            ? "bg-primary-800/50 hover:bg-primary-800 text-primary-100 border border-accent-800/30"
-            : "bg-white/80 hover:bg-white text-primary-900 border border-primary-300"
-        }`}
-      >
-        <span>Favorites ({favorites.length})</span>
-        <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
+    <section className="mb-16">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Heart size={32} fill="#8B4545" className="text-[#8B4545]" />
+          <div>
+            <h2 
+              className="text-3xl md:text-4xl font-bold text-[#5C2E2E]" 
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              Favorite Quotes
+            </h2>
+            <p className="text-sm text-[#8B4545]">
+              {favorites.length} {favorites.length === 1 ? 'quote' : 'quotes'} saved
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={clearFavorites}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-white border border-[#5C2E2E]/15 text-[#5C2E2E] hover:bg-[#EAD7C0] transition-colors"
         >
-          {isOpen ? (
-            <ChevronUp className="w-5 h-5" />
-          ) : (
-            <ChevronDown className="w-5 h-5" />
-          )}
-        </motion.div>
-      </motion.button>
+          <Trash2 size={16} />
+          <span className="hidden sm:inline">Clear All</span>
+        </button>
+      </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            {favoriteQuotes.length > 0 ? (
-              <div className="mt-4 grid md:grid-cols-2 gap-4">
-                {favoriteQuotes.map((quote, index) => (
-                  <motion.div
-                    key={quote.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`p-5 rounded-xl relative group ${
-                      darkMode
-                        ? "bg-primary-800/30 border border-accent-800/20 hover:border-accent-700/40"
-                        : "bg-white/60 border border-primary-300 hover:border-primary-400"
-                    } transition-all duration-300`}
-                  >
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => onRemoveFavorite(quote.id)}
-                      className={`absolute top-3 right-3 p-1 rounded-full transition-all opacity-0 group-hover:opacity-100 ${
-                        darkMode
-                          ? "bg-accent-800 hover:bg-accent-700 text-primary-100"
-                          : "bg-primary-200 hover:bg-primary-300 text-primary-900"
-                      }`}
-                    >
-                      <X className="w-4 h-4" />
-                    </motion.button>
-
-                    <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-3 capitalize ${
-                        darkMode
-                          ? "bg-accent-900/50 text-accent-200"
-                          : "bg-primary-200 text-primary-800"
-                      }`}
-                    >
-                      {quote.category}
-                    </span>
-
-                    <p
-                      className={`text-sm font-serif mb-3 pr-6 leading-relaxed ${
-                        darkMode ? "text-primary-100" : "text-primary-900"
-                      }`}
-                    >
-                      &ldquo;{quote.text}&rdquo;
-                    </p>
-
-                    <div
-                      className={`text-xs ${
-                        darkMode ? "text-primary-400" : "text-primary-600"
-                      }`}
-                    >
-                      <p className="font-semibold">— {quote.source}</p>
-                      <p>{quote.reference}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className={`mt-4 p-8 text-center rounded-xl ${
-                  darkMode
-                    ? "bg-primary-800/30 text-primary-400"
-                    : "bg-white/60 text-primary-600"
-                }`}
-              >
-                <p>
-                  No favorites yet. Click the heart icon on quotes to save them!
-                </p>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      {/* Quotes Grid */}
+      <div className="space-y-6">
+        {favoriteQuotes.map((quote) => (
+          <QuoteCard key={quote.id} quote={quote} />
+        ))}
+      </div>
+    </section>
   );
 };

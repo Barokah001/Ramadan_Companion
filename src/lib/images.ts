@@ -1,12 +1,17 @@
-import { type DailyImage } from "../types";
+// src/data/images.ts
 
-export const DAILY_IMAGES: DailyImage[] = Array.from(
-  { length: 30 },
-  (_, i) => ({
-    id: i + 1,
-    day: i + 1,
-    path: `/images/day-${i + 1}.jpg`,
-    alt: `Day ${i + 1} - Ramadan Reflection`,
-    description: `Beautiful reflection for day ${i + 1} of Ramadan`,
-  })
-);
+export interface DailyImage {
+  id: number;
+  day: number;
+  path: string;
+  alt: string;
+  description?: string;
+}
+
+export const dailyImages: DailyImage[] = Array.from({ length: 30 }, (_, i) => ({
+  id: i + 1,
+  day: i + 1,
+  path: `/images/day-${i + 1}.jpg`,
+  alt: `Ramadan Day ${i + 1} Reflection`,
+  description: `Day ${i + 1} of Ramadan`,
+}));

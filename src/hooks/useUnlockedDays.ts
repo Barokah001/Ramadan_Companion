@@ -1,17 +1,25 @@
-import { useState } from "react";
+// src/hooks/useUnlockedDays.ts
 
-export const useUnlockedDays = () => {
-  const [ramadanStart] = useState(() => {
-    const saved = localStorage.getItem("ramadanStart");
-    return saved ? new Date(saved) : new Date("2025-03-01"); // Default Ramadan start date
-  });
+import { useState, useEffect } from "react";
+import { getUnlockedDays } from "../utils/dateHelpers";
 
-  const getCurrentDay = () => {
-    const today = new Date();
-    const diffTime = Math.abs(today.getTime() - ramadanStart.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.min(Math.max(diffDays, 1), 30);
-  };
+export const useUnlockedDays = (startDate: string, maxDays: number = 30) => {
+  const [unlockedDays, setUnlockedDays] = useState<number>(0);
 
-  return getCurrentDay();
+  useEffect(() => {
+    const updateUnlockedDays = () => {
+      const days = getUnlockedDays(startDate, maxDays);
+      setUnlockedDays(days);
+    };
+
+    // Initial calculation
+    updateUnlockedDays();
+
+    // Update every minute to check for new day
+    const interval = setInterval(updateUnlockedDays, 60000);
+
+    return () => clearInterval(interval);
+  }, [startDate, maxDays]);
+
+  return unlockedDays;
 };
