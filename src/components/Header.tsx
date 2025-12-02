@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 
 export const Header: React.FC = () => {
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-[#5C2E2E]/15 shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 py-6">
+    <header className="bg-white border-b border-[#5C2E2E]/15 shadow-sm w-full">
+      <div className="max-w-full mx-auto px-6 py-4">
         <div className="text-center">
           <motion.h1 
             initial={{ opacity: 0, y: -10 }}
@@ -14,7 +14,7 @@ export const Header: React.FC = () => {
             className="text-4xl md:text-5xl font-bold text-[#5C2E2E] mb-2"
             style={{ fontFamily: 'Playfair Display, serif' }}
           >
-            Ramadan Wisdom
+            Ramadan Companion
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}

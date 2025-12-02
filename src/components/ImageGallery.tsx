@@ -25,7 +25,7 @@ export const ImageGallery: React.FC = () => {
   return (
     <section className="mb-16">
       {/* Header */}
-      <div className="mb-6">
+      <div className="flex flex-col justify-center items-center text-center mb-6">
         <h2 
           className="text-3xl md:text-4xl font-bold text-[#5C2E2E] mb-2" 
           style={{ fontFamily: 'Playfair Display, serif' }}

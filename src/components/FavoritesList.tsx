@@ -1,14 +1,14 @@
 // src/components/FavoritesList.tsx
 
-import React from 'react';
-import { Heart, Trash2 } from 'lucide-react';
-import { QuoteCard } from './QuoteCard';
-import { useFavorites } from '../contexts/FavoritesContext';
-import { quotes } from '../lib/quotes';
+import React from "react";
+import { Heart, Trash2 } from "lucide-react";
+import { QuoteCard } from "./QuoteCard";
+import { useFavorites } from "../contexts/FavoritesContext";
+import { quotes } from "../lib/quotes";
 
 export const FavoritesList: React.FC = () => {
   const { favorites, clearFavorites } = useFavorites();
-  const favoriteQuotes = quotes.filter(quote => favorites.includes(quote.id));
+  const favoriteQuotes = quotes.filter((quote) => favorites.includes(quote.id));
 
   if (favorites.length === 0) {
     return null;
@@ -21,14 +21,15 @@ export const FavoritesList: React.FC = () => {
         <div className="flex items-center gap-4">
           <Heart size={32} fill="#8B4545" className="text-[#8B4545]" />
           <div>
-            <h2 
-              className="text-3xl md:text-4xl font-bold text-[#5C2E2E]" 
-              style={{ fontFamily: 'Playfair Display, serif' }}
+            <h2
+              className="text-3xl md:text-4xl font-bold text-[#5C2E2E]"
+              style={{ fontFamily: "Playfair Display, serif" }}
             >
               Favorite Quotes
             </h2>
             <p className="text-sm text-[#8B4545]">
-              {favorites.length} {favorites.length === 1 ? 'quote' : 'quotes'} saved
+              {favorites.length} {favorites.length === 1 ? "quote" : "quotes"}{" "}
+              saved
             </p>
           </div>
         </div>
@@ -43,7 +44,7 @@ export const FavoritesList: React.FC = () => {
       </div>
 
       {/* Quotes Grid */}
-      <div className="space-y-6">
+      <div className="flex grid-cols-2 gap-3 space-y-6">
         {favoriteQuotes.map((quote) => (
           <QuoteCard key={quote.id} quote={quote} />
         ))}

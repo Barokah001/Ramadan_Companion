@@ -27,7 +27,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({ image, isUnlocked }) => {
   };
 
   return (
-    <div className="flex-shrink-0 w-72 h-72 relative rounded-xl overflow-hidden shadow-lg border border-[#5C2E2E]/15 bg-white group">
+    <div className="flex-shrink-0 w-75 h-75 relative rounded-xl overflow-hidden shadow-lg border border-[#5C2E2E]/15 bg-white group">
       {isUnlocked ? (
         <>
           {/* Image */}

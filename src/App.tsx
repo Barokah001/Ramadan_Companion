@@ -6,7 +6,7 @@ import { Header } from './components/Header';
 import { QuoteCard } from './components/QuoteCard';
 import { ImageGallery } from './components/ImageGallery';
 import { FavoritesList } from './components/FavoritesList';
-import { quotes } from './data/quotes';
+import { quotes } from './lib/quotes';
 
 const App: React.FC = () => {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
@@ -28,15 +28,15 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5EBDC]">
+    <div className="min-h-screen bg-[rgb(245,235,220)] flex flex-col items-center justify-center gap-4">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-6 py-12">
+      <main className="max-w-full mx-auto px-6 py-12 ">
         {/* Daily Wisdom Section */}
         <section className="mb-16">
-          <div className="mb-6">
+          <div className="flex flex-col gap-3 items-center justify-center text-center my-3">
             <h2 
-              className="text-3xl md:text-4xl font-bold text-[#5C2E2E] mb-2" 
+              className="text-2xl md:text-4xl font-bold text-[#5C2E2E]" 
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
               Daily Wisdom
@@ -47,15 +47,15 @@ const App: React.FC = () => {
           </div>
 
           {/* Quote Display */}
-          <div className="mb-6">
+          <div className="flex items-center justify-center ">
             <QuoteCard quote={quotes[currentQuoteIndex]} />
           </div>
 
           {/* Navigation Controls */}
-          <div className="flex justify-center items-center gap-4">
+          <div className="flex justify-center items-center gap-4 my-3">
             <button
               onClick={prevQuote}
-              className="p-3 rounded-full bg-white shadow-md border border-[#5C2E2E]/15 hover:bg-[#EAD7C0] transition-colors"
+              className="flex items-center justify-center h-10 w-10 p-3 rounded-full bg-white shadow-md border border-[#5C2E2E]/15 hover:bg-[#EAD7C0] transition-colors"
               aria-label="Previous quote"
             >
               <ChevronLeft size={24} className="text-[#5C2E2E]" />
@@ -63,7 +63,7 @@ const App: React.FC = () => {
 
             <button
               onClick={randomQuote}
-              className="p-3 rounded-full bg-[#8B4545] shadow-md hover:bg-[#5C2E2E] transition-colors"
+              className="flex items-center justify-center h-10 w-10 p-3 rounded-full bg-[#8B4545] shadow-md hover:bg-[#5C2E2E] transition-colors"
               aria-label="Random quote"
             >
               <Sparkles size={24} className="text-white" />
@@ -71,7 +71,7 @@ const App: React.FC = () => {
 
             <button
               onClick={nextQuote}
-              className="p-3 rounded-full bg-white shadow-md border border-[#5C2E2E]/15 hover:bg-[#EAD7C0] transition-colors"
+              className="flex items-center justify-center h-10 w-10 p-3 rounded-full bg-white shadow-md border border-[#5C2E2E]/15 hover:bg-[#EAD7C0] transition-colors"
               aria-label="Next quote"
             >
               <ChevronRight size={24} className="text-[#5C2E2E]" />
@@ -92,7 +92,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-10 border-t border-[#5C2E2E]/15 bg-white">
+      <footer className="text-center py-8 border-t border-[#5C2E2E]/15 bg-white w-full">
         <p className="text-base text-[#8B4545] mb-2">
           May this Ramadan bring peace, blessings, and spiritual growth
         </p>
