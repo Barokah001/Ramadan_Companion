@@ -28,7 +28,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-8 shadow-md border border-[#5C2E2E]/15 flex flex-col gap-3 items-center justify-center h-90 w-[380px]">
+    <div className="bg-white rounded-xl p-8 shadow-md border border-[#5C2E2E]/15 flex flex-col gap-3 items-center justify-center h-90 md:h-105 w-[380px] md:w-[410px]">
       {/* Header */}
       <div className="flex">
         <span

@@ -31,9 +31,9 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-[rgb(245,235,220)] flex flex-col items-center justify-center gap-4">
       <Header />
 
-      <main className="max-w-full mx-auto px-6 py-12 ">
+      <main className="max-w-full mx-auto px-6">
         {/* Daily Wisdom Section */}
-        <section className="mb-16">
+        <section className="mb-10">
           <div className="flex flex-col gap-3 items-center justify-center text-center my-3">
             <h2 
               className="text-2xl md:text-4xl font-bold text-[#5C2E2E]" 
@@ -92,7 +92,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="text-center py-8 border-t border-[#5C2E2E]/15 bg-white w-full">
+      <footer className="text-center py-5 border-t border-[#5C2E2E]/15 bg-white w-full">
         <p className="text-base text-[#8B4545] mb-2">
           May this Ramadan bring peace, blessings, and spiritual growth
         </p>
