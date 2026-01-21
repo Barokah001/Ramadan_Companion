@@ -1,8 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 
-// src/context/FavoritesContext.tsx
+// src/contexts/FavoritesContext.tsx
 
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 
 interface FavoritesContextType {
   favorites: number[];
@@ -11,23 +17,53 @@ interface FavoritesContextType {
   clearFavorites: () => void;
 }
 
-const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
+const FavoritesContext = createContext<FavoritesContextType | undefined>(
+  undefined,
+);
 
-export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [favorites, setFavorites] = useState<number[]>(() => {
-    const saved = localStorage.getItem('ramadan-favorites');
-    return saved ? JSON.parse(saved) : [];
-  });
+export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
+  // Load favorites from storage on mount
   useEffect(() => {
-    localStorage.setItem('ramadan-favorites', JSON.stringify(favorites));
-  }, [favorites]);
+    const loadFavorites = async () => {
+      try {
+        const stored = await window.storage.get("ramadan-favorites");
+        if (stored) {
+          setFavorites(JSON.parse(stored.value));
+        }
+      } catch (error) {
+        console.log("No stored favorites");
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+    loadFavorites();
+  }, []);
+
+  // Save favorites to storage whenever they change
+  useEffect(() => {
+    if (isLoaded) {
+      const saveFavorites = async () => {
+        try {
+          await window.storage.set(
+            "ramadan-favorites",
+            JSON.stringify(favorites),
+          );
+        } catch (error) {
+          console.error("Failed to save favorites:", error);
+        }
+      };
+      saveFavorites();
+    }
+  }, [favorites, isLoaded]);
 
   const toggleFavorite = (id: number) => {
-    setFavorites(prev => 
-      prev.includes(id) 
-        ? prev.filter(fav => fav !== id)
-        : [...prev, id]
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
     );
   };
 
@@ -40,7 +76,9 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   return (
-    <FavoritesContext.Provider value={{ favorites, toggleFavorite, isFavorite, clearFavorites }}>
+    <FavoritesContext.Provider
+      value={{ favorites, toggleFavorite, isFavorite, clearFavorites }}
+    >
       {children}
     </FavoritesContext.Provider>
   );
@@ -49,7 +87,7 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
 export const useFavorites = (): FavoritesContextType => {
   const context = useContext(FavoritesContext);
   if (!context) {
-    throw new Error('useFavorites must be used within a FavoritesProvider');
+    throw new Error("useFavorites must be used within a FavoritesProvider");
   }
   return context;
 };
