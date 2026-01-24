@@ -1,6 +1,7 @@
 // src/utils/quoteHelpers.ts
 
-import { Quote } from '../data/quotes';
+import type { Quote } from "../lib/quotes";
+
 
 /**
  * Transform raw quote from database format to app format
