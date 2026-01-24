@@ -1,4 +1,6 @@
-// src/components/DailyTasks.tsx - Fully Responsive
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+// src/components/DailyTasks.tsx - PROPERLY SIZED
 
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, Calendar } from "lucide-react";
@@ -32,13 +34,11 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
   const [morningDhikr, setMorningDhikr] = useState(false);
   const [eveningDhikr, setEveningDhikr] = useState(false);
 
-  // Load data
   useEffect(() => {
     const loadData = async () => {
       try {
         const today = new Date().toISOString().split("T")[0];
         const stored = await storage.get(`daily-tasks-${today}`);
-
         if (stored) {
           const data = JSON.parse(stored.value);
           setPrayers(data.prayers || prayers);
@@ -47,14 +47,13 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
           setMorningDhikr(data.morningDhikr || false);
           setEveningDhikr(data.eveningDhikr || false);
         }
-      } catch (err) {
-        console.log("No stored tasks");
+      } catch {
+        // No stored tasks
       }
     };
     loadData();
   }, []);
 
-  // Save data
   useEffect(() => {
     const saveData = async () => {
       try {
@@ -69,8 +68,8 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
             eveningDhikr,
           }),
         );
-      } catch (err) {
-        console.error("Failed to save:", err);
+      } catch {
+        // Failed to save
       }
     };
     saveData();
@@ -111,102 +110,85 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
 
   const completedPrayers = prayers.filter((p) => p.completed).length;
   const completedTasks = customTasks.filter((t) => t.completed).length;
-  const totalProgress =
+  const totalProgress = Math.round(
     (completedPrayers / 5) * 35 +
-    (morningDhikr ? 15 : 0) +
-    (eveningDhikr ? 15 : 0) +
-    Math.min((quranPages / 4) * 20, 20) +
-    (customTasks.length > 0 ? (completedTasks / customTasks.length) * 15 : 0);
+      (morningDhikr ? 15 : 0) +
+      (eveningDhikr ? 15 : 0) +
+      Math.min((quranPages / 4) * 20, 20) +
+      (customTasks.length > 0 ? (completedTasks / customTasks.length) * 15 : 0),
+  );
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="flex flex-col gap-2 space-y-6">
       {/* Progress Overview */}
       <div
-        className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 shadow-xl border`}
+        className={`p-8 ${
+          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        } rounded-xl p-5 shadow-lg border`}
       >
-        <div className="flex items-center gap-3 sm:gap-4 mb-6">
-          <div
-            className={`p-3 rounded-full ${
-              darkMode ? "bg-amber-600" : "bg-[#8B4545]"
-            } shadow-lg`}
-          >
-            <Calendar className="text-white" size={24} />
-          </div>
+        <div className="flex items-center gap-3 mb-4">
+          <Calendar
+            className={darkMode ? "text-gray-100" : "text-[#5C2E2E]"}
+            size={20}
+          />
           <div>
-            <h2
-              className={`text-2xl sm:text-3xl font-bold ${
-                darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-              }`}
+            <h3
+              className={`text-l font-semibold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
               style={{ fontFamily: "Playfair Display, serif" }}
             >
               Daily Tasks
-            </h2>
+            </h3>
             <p
-              className={`text-sm sm:text-base ${
-                darkMode ? "text-gray-400" : "text-[#8B4545]"
-              }`}
+              className={`text-l ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
             >
               Track your spiritual journey today
             </p>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
+        <div className="my-6">
+          <div className="flex items-center justify-between mb-2">
             <span
-              className={`text-sm sm:text-base font-medium ${
-                darkMode ? "text-gray-300" : "text-[#8B4545]"
-              }`}
+              className={`text-l ${darkMode ? "text-gray-300" : "text-[#8B4545]"}`}
             >
               Daily Progress
             </span>
             <span
-              className={`text-xl sm:text-2xl font-bold ${
-                darkMode ? "text-amber-500" : "text-[#8B4545]"
-              }`}
+              className={`text-lg font-bold ${darkMode ? "text-amber-500" : "text-[#8B4545]"}`}
             >
-              {Math.round(totalProgress)}%
+              {totalProgress}%
             </span>
           </div>
           <div
-            className={`h-4 sm:h-5 rounded-full overflow-hidden shadow-inner ${
+            className={`h-3 rounded-full overflow-hidden ${
               darkMode ? "bg-gray-700" : "bg-[#EAD7C0]"
             }`}
           >
             <div
-              className={`h-full rounded-full transition-all duration-700 ${
+              className={`h-full rounded-full transition-all ${
                 darkMode ? "bg-amber-600" : "bg-[#8B4545]"
-              } shadow-md`}
+              }`}
               style={{ width: `${totalProgress}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* Prayers Section */}
+      {/* Prayers */}
       <div
         className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 shadow-xl border`}
+          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        } rounded-xl p-5 shadow-lg border`}
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h3
-            className={`text-xl sm:text-2xl font-bold ${
-              darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-            }`}
+            className={`text-l font-semibold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
             style={{ fontFamily: "Playfair Display, serif" }}
           >
             Daily Prayers
           </h3>
           <span
-            className={`text-sm sm:text-base font-semibold px-3 py-1 rounded-full ${
+            className={`text-sm flex items-center justify-center w-8 h-8 font-semibold px-2.5 py-1 rounded-full ${
               darkMode
                 ? "bg-gray-700 text-amber-500"
                 : "bg-[#EAD7C0] text-[#8B4545]"
@@ -216,31 +198,27 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
           </span>
         </div>
 
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-2">
           {prayers.map((prayer, index) => (
             <button
               key={prayer.name}
               onClick={() => togglePrayer(index)}
-              className={`w-full flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl transition-all ${
+              className={`w-full flex items-center gap-3 p-3 rounded-lg ${
                 darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"
-              } ${
-                prayer.completed ? "opacity-60" : ""
-              } transform hover:scale-[1.02] active:scale-[0.98]`}
+              } ${prayer.completed ? "opacity-60" : ""}`}
             >
-              <div className="flex-shrink-0">
-                {prayer.completed ? (
-                  <CheckCircle2 className="text-green-500" size={28} />
-                ) : (
-                  <Circle
-                    className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                    size={28}
-                  />
-                )}
-              </div>
+              {prayer.completed ? (
+                <CheckCircle2 className="text-green-500" size={20} />
+              ) : (
+                <Circle
+                  className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
+                  size={20}
+                />
+              )}
               <span
-                className={`text-base sm:text-lg font-medium ${
-                  darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-                } ${prayer.completed ? "line-through" : ""}`}
+                className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${
+                  prayer.completed ? "line-through" : ""
+                }`}
               >
                 {prayer.name}
               </span>
@@ -252,24 +230,20 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
       {/* Quran Reading */}
       <div
         className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 shadow-xl border`}
+          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        } rounded-xl p-5 shadow-lg border`}
       >
         <h3
-          className={`text-xl sm:text-2xl font-bold ${
-            darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-          } mb-6`}
+          className={`text-lg font-bold mb-4 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
           style={{ fontFamily: "Playfair Display, serif" }}
         >
           Quran Reading
         </h3>
 
-        <div className="flex items-center justify-center gap-4 sm:gap-6">
+        <div className="flex items-center justify-center gap-4">
           <button
             onClick={() => setQuranPages(Math.max(0, quranPages - 1))}
-            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl font-bold text-xl sm:text-2xl transition-all transform hover:scale-110 active:scale-95 shadow-lg ${
+            className={`w-10 h-10 rounded-lg font-bold text-lg ${
               darkMode
                 ? "bg-gray-700 text-gray-100 hover:bg-gray-600"
                 : "bg-[#EAD7C0] text-[#5C2E2E] hover:bg-[#d4c4a8]"
@@ -280,16 +254,12 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
 
           <div className="flex-1 max-w-xs text-center">
             <div
-              className={`text-5xl sm:text-6xl font-bold ${
-                darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-              }`}
+              className={`text-4xl font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
             >
               {quranPages}
             </div>
             <div
-              className={`text-sm sm:text-base mt-2 ${
-                darkMode ? "text-gray-400" : "text-[#8B4545]"
-              }`}
+              className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
             >
               Pages Today
             </div>
@@ -297,7 +267,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
 
           <button
             onClick={() => setQuranPages(quranPages + 1)}
-            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl font-bold text-xl sm:text-2xl transition-all transform hover:scale-110 active:scale-95 shadow-lg ${
+            className={`w-10 h-10 rounded-lg font-bold text-lg ${
               darkMode
                 ? "bg-gray-700 text-gray-100 hover:bg-gray-600"
                 : "bg-[#EAD7C0] text-[#5C2E2E] hover:bg-[#d4c4a8]"
@@ -308,25 +278,21 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
         </div>
       </div>
 
-      {/* Adhkar Checklist */}
+      {/* Adhkar */}
       <div
         className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 shadow-xl border`}
+          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        } rounded-xl p-5 shadow-lg border`}
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h3
-            className={`text-xl sm:text-2xl font-bold ${
-              darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-            }`}
+            className={`text-lg font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
             style={{ fontFamily: "Playfair Display, serif" }}
           >
             Daily Adhkar
           </h3>
           <span
-            className={`text-sm sm:text-base font-semibold px-3 py-1 rounded-full ${
+            className={`text-sm font-semibold px-2.5 py-1 rounded-full ${
               darkMode
                 ? "bg-gray-700 text-amber-500"
                 : "bg-[#EAD7C0] text-[#8B4545]"
@@ -336,29 +302,25 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
           </span>
         </div>
 
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-2">
           <button
             onClick={() => setMorningDhikr(!morningDhikr)}
-            className={`w-full flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl transition-all ${
+            className={`w-full flex items-center gap-3 p-3 rounded-lg ${
               darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"
-            } ${
-              morningDhikr ? "opacity-60" : ""
-            } transform hover:scale-[1.02] active:scale-[0.98]`}
+            } ${morningDhikr ? "opacity-60" : ""}`}
           >
-            <div className="flex-shrink-0">
-              {morningDhikr ? (
-                <CheckCircle2 className="text-green-500" size={28} />
-              ) : (
-                <Circle
-                  className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                  size={28}
-                />
-              )}
-            </div>
+            {morningDhikr ? (
+              <CheckCircle2 className="text-green-500" size={20} />
+            ) : (
+              <Circle
+                className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
+                size={20}
+              />
+            )}
             <span
-              className={`text-base sm:text-lg font-medium ${
-                darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-              } ${morningDhikr ? "line-through" : ""}`}
+              className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${
+                morningDhikr ? "line-through" : ""
+              }`}
             >
               Morning Adhkar
             </span>
@@ -366,26 +328,22 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
 
           <button
             onClick={() => setEveningDhikr(!eveningDhikr)}
-            className={`w-full flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl transition-all ${
+            className={`w-full flex items-center gap-3 p-3 rounded-lg ${
               darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"
-            } ${
-              eveningDhikr ? "opacity-60" : ""
-            } transform hover:scale-[1.02] active:scale-[0.98]`}
+            } ${eveningDhikr ? "opacity-60" : ""}`}
           >
-            <div className="flex-shrink-0">
-              {eveningDhikr ? (
-                <CheckCircle2 className="text-green-500" size={28} />
-              ) : (
-                <Circle
-                  className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                  size={28}
-                />
-              )}
-            </div>
+            {eveningDhikr ? (
+              <CheckCircle2 className="text-green-500" size={20} />
+            ) : (
+              <Circle
+                className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
+                size={20}
+              />
+            )}
             <span
-              className={`text-base sm:text-lg font-medium ${
-                darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-              } ${eveningDhikr ? "line-through" : ""}`}
+              className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${
+                eveningDhikr ? "line-through" : ""
+              }`}
             >
               Evening Adhkar
             </span>
@@ -396,23 +354,19 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
       {/* Custom Tasks */}
       <div
         className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 shadow-xl border`}
+          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        } rounded-xl p-5 shadow-lg border`}
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h3
-            className={`text-xl sm:text-2xl font-bold ${
-              darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-            }`}
+            className={`text-lg font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
             style={{ fontFamily: "Playfair Display, serif" }}
           >
             Custom Tasks
           </h3>
           {customTasks.length > 0 && (
             <span
-              className={`text-sm sm:text-base font-semibold px-3 py-1 rounded-full ${
+              className={`text-sm font-semibold px-2.5 py-1 rounded-full ${
                 darkMode
                   ? "bg-gray-700 text-amber-500"
                   : "bg-[#EAD7C0] text-[#8B4545]"
@@ -423,86 +377,73 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
           )}
         </div>
 
-        <div className="flex gap-2 sm:gap-3 mb-6">
+        <div className="flex gap-2 mb-4">
           <input
             type="text"
             value={newTaskText}
             onChange={(e) => setNewTaskText(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomTask()}
             placeholder="Add a new task..."
-            className={`flex-1 px-4 py-3 sm:py-3.5 rounded-xl text-base ${
+            className={`flex-1 px-3 py-2 rounded-lg text-sm ${
               darkMode
-                ? "bg-gray-700 text-gray-100 border-gray-600 placeholder-gray-400"
-                : "bg-gray-50 text-[#5C2E2E] border-[#5C2E2E]/10 placeholder-gray-400"
-            } border focus:outline-none focus:ring-2 focus:ring-[#8B4545] transition-all`}
+                ? "bg-gray-700 text-gray-100 border-gray-600"
+                : "bg-gray-50 text-[#5C2E2E] border-gray-200"
+            } border focus:outline-none focus:ring-2 focus:ring-[#8B4545]`}
           />
           <button
             onClick={addCustomTask}
             disabled={!newTaskText.trim()}
-            className={`px-4 sm:px-5 py-3 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+            className={`px-4 py-2 rounded-lg ${
               darkMode
                 ? "bg-amber-600 hover:bg-amber-700"
                 : "bg-[#8B4545] hover:bg-[#6B3535]"
-            } text-white font-medium flex items-center gap-2`}
+            } text-white text-sm font-medium disabled:opacity-50`}
           >
-            <Plus size={20} />
-            <span className="hidden sm:inline">Add</span>
+            <Plus size={18} />
           </button>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {customTasks.length === 0 ? (
-            <div
-              className={`text-center py-8 sm:py-12 rounded-xl ${
-                darkMode ? "bg-gray-700/50" : "bg-gray-50"
-              }`}
+            <p
+              className={`text-center py-6 text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
             >
-              <p
-                className={`${
-                  darkMode ? "text-gray-400" : "text-[#8B4545]"
-                } text-sm sm:text-base`}
-              >
-                No custom tasks yet. Add one above!
-              </p>
-            </div>
+              No custom tasks yet. Add one above!
+            </p>
           ) : (
             customTasks.map((task) => (
               <div
                 key={task.id}
-                className={`flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl ${
+                className={`flex items-center gap-2 p-2.5 rounded-lg ${
                   darkMode ? "bg-gray-700" : "bg-gray-50"
-                } ${task.completed ? "opacity-60" : ""} transition-all`}
+                } ${task.completed ? "opacity-60" : ""}`}
               >
                 <button
                   onClick={() => toggleCustomTask(task.id)}
-                  className="flex-shrink-0 transform hover:scale-110 active:scale-95 transition-transform"
+                  className="flex-shrink-0"
                 >
                   {task.completed ? (
-                    <CheckCircle2 className="text-green-500" size={24} />
+                    <CheckCircle2 className="text-green-500" size={18} />
                   ) : (
                     <Circle
                       className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                      size={24}
+                      size={18}
                     />
                   )}
                 </button>
-
                 <span
-                  className={`flex-1 text-base sm:text-lg ${
-                    darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-                  } ${task.completed ? "line-through" : ""}`}
+                  className={`flex-1 text-sm ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${
+                    task.completed ? "line-through" : ""
+                  }`}
                 >
                   {task.text}
                 </span>
-
                 <button
                   onClick={() => deleteCustomTask(task.id)}
-                  className={`p-2 rounded-lg transition-all transform hover:scale-110 active:scale-95 ${
-                    darkMode ? "hover:bg-gray-600" : "hover:bg-white"
-                  }`}
+                  className={`p-1 rounded ${darkMode ? "hover:bg-gray-600" : "hover:bg-gray-200"}`}
                 >
                   <Trash2
-                    size={18}
+                    size={14}
                     className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
                   />
                 </button>

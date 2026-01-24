@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-// src/contexts/UsernameContext.tsx
+// src/contexts/UsernameContext.tsx - Using Supabase
 
 import React, {
   createContext,
@@ -8,6 +8,7 @@ import React, {
   useEffect,
   type ReactNode,
 } from "react";
+import { storage } from "../lib/supabase";
 
 interface UsernameContextType {
   username: string | null;
@@ -31,12 +32,12 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const loadUsername = async () => {
       try {
-        const stored = await window.storage.get("ramadan-username");
-        if (stored) {
+        const stored = await storage.get("ramadan-username");
+        if (stored && stored.value) {
           setUsernameState(stored.value);
         }
       } catch (error) {
-        console.log("No stored username");
+        console.error("Failed to load username:", error);
       } finally {
         setIsLoading(false);
       }
@@ -77,11 +78,10 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     try {
-      // Check if username is already taken (using shared storage)
-      const existingUsers = await window.storage.list("user:", true);
+      // Check if username is already taken
+      const existingUsers = await storage.list("user:");
 
-      // FIX: Check if existingUsers exists and has keys property
-      if (existingUsers?.keys && Array.isArray(existingUsers.keys)) {
+      if (existingUsers && existingUsers.keys) {
         const takenUsernames = existingUsers.keys.map((key) =>
           key.replace("user:", ""),
         );
@@ -95,22 +95,28 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
       }
 
       // Save username locally
-      await window.storage.set("ramadan-username", trimmedUsername);
+      const saveResult = await storage.set("ramadan-username", trimmedUsername);
 
-      // Register username globally (shared)
-      await window.storage.set(
+      if (!saveResult) {
+        return {
+          success: false,
+          message: "Failed to save username. Please try again.",
+        };
+      }
+
+      // Register username globally
+      await storage.set(
         `user:${trimmedUsername}`,
         JSON.stringify({
           username: trimmedUsername,
           createdAt: new Date().toISOString(),
         }),
-        true,
       );
 
       setUsernameState(trimmedUsername);
       return { success: true, message: "Username set successfully!" };
     } catch (error) {
-      console.error("Failed to set username:", error);
+      console.error("Username set error:", error);
       return {
         success: false,
         message: "Failed to save username. Please try again.",

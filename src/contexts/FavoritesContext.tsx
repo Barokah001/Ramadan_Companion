@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 
-// src/contexts/FavoritesContext.tsx
+// src/contexts/FavoritesContext.tsx - Using Supabase
 
 import React, {
   createContext,
@@ -9,6 +9,7 @@ import React, {
   useEffect,
   type ReactNode,
 } from "react";
+import { storage } from "../lib/supabase";
 
 interface FavoritesContextType {
   favorites: number[];
@@ -27,16 +28,16 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({
   const [favorites, setFavorites] = useState<number[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load favorites from storage on mount
+  // Load favorites from Supabase on mount
   useEffect(() => {
     const loadFavorites = async () => {
       try {
-        const stored = await window.storage.get("ramadan-favorites");
-        if (stored) {
+        const stored = await storage.get("ramadan-favorites");
+        if (stored && stored.value) {
           setFavorites(JSON.parse(stored.value));
         }
       } catch (error) {
-        console.log("No stored favorites");
+        console.error("Failed to load favorites:", error);
       } finally {
         setIsLoaded(true);
       }
@@ -44,15 +45,12 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({
     loadFavorites();
   }, []);
 
-  // Save favorites to storage whenever they change
+  // Save favorites to Supabase whenever they change
   useEffect(() => {
     if (isLoaded) {
       const saveFavorites = async () => {
         try {
-          await window.storage.set(
-            "ramadan-favorites",
-            JSON.stringify(favorites),
-          );
+          await storage.set("ramadan-favorites", JSON.stringify(favorites));
         } catch (error) {
           console.error("Failed to save favorites:", error);
         }

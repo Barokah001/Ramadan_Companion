@@ -1,7 +1,13 @@
-// src/components/AdhkarReader.tsx - Fully Responsive
-
+// src/components/AdhkarReader.tsx - Refined & Fully Responsive
 import React, { useState, useEffect } from "react";
-import { CheckCircle, Circle, RotateCcw, BookOpen } from "lucide-react";
+import {
+  CheckCircle,
+  Circle,
+  RotateCcw,
+  BookOpen,
+  Sun,
+  Moon,
+} from "lucide-react";
 import { morningAdhkar, eveningAdhkar, type DhikrItem } from "../lib/adhkar";
 import { storage } from "../lib/supabase";
 
@@ -31,7 +37,6 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
         const today = new Date().toISOString().split("T")[0];
         const key = `adhkar-${activeTab}-${today}`;
         const stored = await storage.get(key);
-
         if (stored) {
           setProgress(JSON.parse(stored.value));
         } else {
@@ -95,134 +100,86 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
   );
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {/* Header Card */}
+    <div className="max-w-4xl mx-auto space-y-10 pb-12 animate-in fade-in duration-700">
+      {/* Header Info Card */}
       <div
-        className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 shadow-xl border`}
+        className={`rounded-[2.5rem] p-8 md:p-10 shadow-2xl border-4 ${darkMode ? "bg-gray-800 border-gray-700/50" : "bg-white border-white"}`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-6">
-          <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div className="flex items-center gap-5">
             <div
-              className={`p-3 rounded-full ${
-                darkMode ? "bg-amber-600" : "bg-[#8B4545]"
-              } shadow-lg`}
+              className={`p-4 rounded-3xl shadow-lg ${darkMode ? "bg-amber-600 text-white" : "bg-[#8B4545] text-white"}`}
             >
-              <BookOpen className="text-white" size={24} />
+              <BookOpen size={28} />
             </div>
             <div>
               <h2
-                className={`text-2xl sm:text-3xl font-bold ${
-                  darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-                }`}
+                className={`text-3xl font-bold tracking-tight ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
                 style={{ fontFamily: "Playfair Display, serif" }}
               >
                 Daily Adhkar
               </h2>
               <p
-                className={`text-sm sm:text-base ${
-                  darkMode ? "text-gray-400" : "text-[#8B4545]"
-                } mt-1`}
+                className={`text-sm font-medium ${darkMode ? "text-gray-400" : "text-[#8B4545]/70"}`}
               >
-                Remember Allah throughout your day
+                Spiritual protection and remembrance
               </p>
             </div>
           </div>
-
           <button
             onClick={resetAll}
-            className={`self-start sm:self-auto flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-medium transition-all transform hover:scale-105 active:scale-95 shadow-md ${
-              darkMode
-                ? "bg-gray-700 hover:bg-gray-600 text-gray-100"
-                : "bg-[#EAD7C0] hover:bg-[#d4c4a8] text-[#5C2E2E]"
-            }`}
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 shadow-md ${darkMode ? "bg-gray-700 text-gray-200 hover:bg-gray-600" : "bg-amber-50 text-[#8B4545] hover:bg-amber-100"}`}
           >
             <RotateCcw size={18} />
-            <span className="text-sm">Reset All</span>
+            <span>Reset All</span>
           </button>
         </div>
 
-        {/* Tab Buttons */}
-        <div className="flex gap-3 sm:gap-4 mb-6">
+        {/* Custom Tab Switcher */}
+        <div
+          className={`flex p-1.5 rounded-3xl mb-10 ${darkMode ? "bg-gray-900" : "bg-gray-100"}`}
+        >
           <button
             onClick={() => setActiveTab("morning")}
-            className={`flex-1 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-md ${
-              activeTab === "morning"
-                ? `${
-                    darkMode ? "bg-amber-600" : "bg-[#8B4545]"
-                  } text-white shadow-lg`
-                : `${
-                    darkMode
-                      ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                      : "bg-gray-100 text-[#8B4545] hover:bg-gray-200"
-                  }`
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[1.25rem] font-bold text-sm transition-all ${activeTab === "morning" ? (darkMode ? "bg-amber-600 text-white shadow-lg" : "bg-white text-[#8B4545] shadow-md") : darkMode ? "text-gray-500 hover:text-gray-300" : "text-[#8B4545]/50 hover:text-[#8B4545]"}`}
           >
-            Morning Adhkar
+            <Sun size={18} /> Morning
           </button>
           <button
             onClick={() => setActiveTab("evening")}
-            className={`flex-1 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-md ${
-              activeTab === "evening"
-                ? `${
-                    darkMode ? "bg-amber-600" : "bg-[#8B4545]"
-                  } text-white shadow-lg`
-                : `${
-                    darkMode
-                      ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                      : "bg-gray-100 text-[#8B4545] hover:bg-gray-200"
-                  }`
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[1.25rem] font-bold text-sm transition-all ${activeTab === "evening" ? (darkMode ? "bg-amber-600 text-white shadow-lg" : "bg-white text-[#8B4545] shadow-md") : darkMode ? "text-gray-500 hover:text-gray-300" : "text-[#8B4545]/50 hover:text-[#8B4545]"}`}
           >
-            Evening Adhkar
+            <Moon size={18} /> Evening
           </button>
         </div>
 
-        {/* Progress Section */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
+        {/* Overall Progress */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-end">
             <span
-              className={`text-sm sm:text-base font-medium ${
-                darkMode ? "text-gray-400" : "text-[#8B4545]"
-              }`}
+              className={`text-sm font-bold uppercase tracking-widest ${darkMode ? "text-gray-400" : "text-[#8B4545]/60"}`}
             >
-              Progress
+              Overall Progress
             </span>
             <span
-              className={`text-xl sm:text-2xl font-bold ${
-                darkMode ? "text-amber-500" : "text-[#8B4545]"
-              }`}
+              className={`text-2xl font-black ${darkMode ? "text-amber-500" : "text-[#8B4545]"}`}
             >
               {totalCompleted}/{currentAdhkar.length}
             </span>
           </div>
           <div
-            className={`h-4 sm:h-5 rounded-full overflow-hidden shadow-inner ${
-              darkMode ? "bg-gray-700" : "bg-[#EAD7C0]"
-            }`}
+            className={`h-4 rounded-full shadow-inner overflow-hidden ${darkMode ? "bg-gray-900" : "bg-amber-50"}`}
           >
             <div
-              className={`h-full rounded-full transition-all duration-700 shadow-md ${
-                darkMode ? "bg-amber-600" : "bg-[#8B4545]"
-              }`}
+              className={`h-full transition-all duration-1000 ease-out rounded-full ${darkMode ? "bg-amber-600 shadow-[0_0_10px_rgba(217,119,6,0.3)]" : "bg-[#8B4545]"}`}
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <p
-            className={`text-center text-sm mt-2 ${
-              darkMode ? "text-gray-400" : "text-[#8B4545]"
-            }`}
-          >
-            {progressPercent}% Complete
-          </p>
         </div>
       </div>
 
-      {/* Adhkar List */}
-      <div className="space-y-4 sm:space-y-6">
+      {/* Adhkar Items Grid */}
+      <div className="grid grid-cols-1 gap-6">
         {currentAdhkar.map((dhikr) => {
           const count = progress.counters[dhikr.id] || 0;
           const isCompleted = progress.completed[dhikr.id] || false;
@@ -230,122 +187,63 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
           return (
             <div
               key={dhikr.id}
-              className={`${
-                darkMode
-                  ? "bg-gray-800 border-gray-700"
-                  : "bg-white border-[#5C2E2E]/10"
-              } rounded-2xl p-6 sm:p-8 shadow-xl border transition-all ${
-                isCompleted ? "opacity-70" : "hover:shadow-2xl"
-              }`}
+              onClick={() => !isCompleted && incrementCounter(dhikr)}
+              className={`group relative p-8 md:p-10 rounded-[2.5rem] border-4 transition-all duration-300 cursor-pointer ${isCompleted ? (darkMode ? "bg-gray-900/40 border-gray-800 opacity-60" : "bg-gray-50 border-transparent opacity-70 scale-95") : darkMode ? "bg-gray-800 border-gray-700/50 hover:border-amber-500/50" : "bg-white border-white hover:shadow-2xl hover:-translate-y-1"}`}
             >
-              {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-6">
-                <div className="flex items-center gap-3 flex-wrap">
-                  {isCompleted ? (
-                    <CheckCircle
-                      className="text-green-500 flex-shrink-0"
-                      size={28}
-                    />
-                  ) : (
-                    <Circle
-                      className={`flex-shrink-0 ${
-                        darkMode ? "text-gray-400" : "text-[#8B4545]"
-                      }`}
-                      size={28}
-                    />
-                  )}
-                  <span
-                    className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase ${
-                      darkMode
-                        ? "bg-gray-700 text-gray-300"
-                        : "bg-[#EAD7C0] text-[#8B4545]"
-                    }`}
-                  >
-                    {dhikr.category.replace("_", " ")}
-                  </span>
+              <div className="flex justify-between items-start mb-8">
+                <div
+                  className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${darkMode ? "bg-gray-700 text-amber-500" : "bg-amber-50 text-[#8B4545]"}`}
+                >
+                  {dhikr.category.replace("_", " ")}
                 </div>
-                {dhikr.reference && (
-                  <span
-                    className={`text-xs sm:text-sm ${
-                      darkMode ? "text-gray-400" : "text-[#8B4545]"
-                    } self-start sm:self-auto`}
-                  >
-                    {dhikr.reference}
-                  </span>
-                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    resetDhikr(dhikr.id);
+                  }}
+                  className={`p-2 rounded-xl transition-all hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500`}
+                >
+                  <RotateCcw size={16} />
+                </button>
               </div>
 
-              {/* Arabic Text */}
-              <p
-                className={`text-xl sm:text-2xl lg:text-3xl ${
-                  darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-                } mb-6 text-right leading-loose sm:leading-loose`}
-                style={{ fontFamily: "Arial, sans-serif", direction: "rtl" }}
-              >
-                {dhikr.arabic}
-              </p>
+              <div className="space-y-8 text-center md:text-right">
+                <p
+                  className={`text-2xl md:text-4xl leading-[1.8] font-serif ${darkMode ? "text-amber-100" : "text-[#5C2E2E]"}`}
+                  dir="rtl"
+                >
+                  {dhikr.arabic}
+                </p>
+                <div className="text-center md:text-left space-y-4">
+                  <p
+                    className={`text-sm md:text-base italic font-serif leading-relaxed ${darkMode ? "text-gray-400" : "text-[#8B4545]/70"}`}
+                  >
+                    {dhikr.transliteration}
+                  </p>
+                  <p
+                    className={`text-base md:text-lg font-medium leading-relaxed ${darkMode ? "text-gray-200" : "text-[#5C2E2E]"}`}
+                  >
+                    {dhikr.translation}
+                  </p>
+                </div>
+              </div>
 
-              {/* Transliteration */}
-              <p
-                className={`text-sm sm:text-base ${
-                  darkMode ? "text-gray-400" : "text-[#8B4545]"
-                } italic mb-4`}
-              >
-                {dhikr.transliteration}
-              </p>
-
-              {/* Translation */}
-              <p
-                className={`text-base sm:text-lg ${
-                  darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-                } mb-6 leading-relaxed`}
-              >
-                {dhikr.translation}
-              </p>
-
-              {/* Action Bar */}
-              <div
-                className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-6 border-t ${
-                  darkMode ? "border-gray-700" : "border-gray-200"
-                }`}
-              >
+              <div className="mt-10 pt-8 border-t border-gray-100 dark:border-gray-700/50 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => incrementCounter(dhikr)}
-                    disabled={isCompleted}
-                    className={`px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all transform ${
-                      isCompleted
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : `${
-                            darkMode
-                              ? "bg-amber-600 hover:bg-amber-700"
-                              : "bg-[#8B4545] hover:bg-[#6B3535]"
-                          } text-white hover:shadow-lg hover:scale-105 active:scale-95`
-                    }`}
-                  >
-                    Count
-                  </button>
                   <div
-                    className={`text-lg sm:text-xl font-bold ${
-                      darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-                    }`}
+                    className={`h-14 w-14 rounded-full flex items-center justify-center font-black text-xl transition-all ${isCompleted ? "bg-green-500 text-white" : darkMode ? "bg-gray-700 text-amber-500" : "bg-amber-50 text-[#8B4545]"}`}
                   >
-                    {count} / {dhikr.repetitions}
+                    {isCompleted ? <CheckCircle size={28} /> : count}
+                  </div>
+                  <div className="text-sm font-bold uppercase tracking-widest opacity-40">
+                    of {dhikr.repetitions} Repetitions
                   </div>
                 </div>
-
-                <button
-                  onClick={() => resetDhikr(dhikr.id)}
-                  className={`p-3 rounded-xl transition-all transform hover:scale-110 active:scale-95 self-end sm:self-auto ${
-                    darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
-                  }`}
-                  aria-label="Reset this dhikr"
+                <div
+                  className={`px-5 py-2 rounded-2xl text-xs font-bold ${darkMode ? "bg-gray-900 text-gray-500" : "bg-gray-100 text-gray-400"}`}
                 >
-                  <RotateCcw
-                    size={20}
-                    className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                  />
-                </button>
+                  {dhikr.reference || "Authentic Source"}
+                </div>
               </div>
             </div>
           );

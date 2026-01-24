@@ -6,7 +6,7 @@ import { useUnlockedDays } from "../hooks/useUnlockedDays";
 import { ImageCard } from "./ImageCard";
 import { dailyImages } from "../lib/images";
 
-const RAMADAN_START_DATE = "2025-03-01";
+const RAMADAN_START_DATE = "2026-02-17";
 
 interface ImageGalleryProps {
   darkMode?: boolean;
@@ -29,7 +29,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   };
 
   return (
-    <section className="mb-12 sm:mb-16 lg:mb-20">
+    <section className="flex flex-col gap-3 sm:mb-12 lg:mb-20">
       {/* Header */}
       <div className="text-center mb-6 sm:mb-8 lg:mb-10 px-4">
         <h2
@@ -47,7 +47,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         >
           <span className="font-semibold">{unlockedDays}</span> of{" "}
           <span className="font-semibold">30</span> days unlocked
-          <span className="hidden sm:inline"> • New image unlocks each day</span>
+          <span className="hidden sm:inline">
+            {" "}
+            • New image unlocks each day
+          </span>
         </p>
       </div>
 
@@ -56,7 +59,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         {/* Left Arrow - Hidden on mobile, visible on tablet+ */}
         <button
           onClick={() => scroll("left")}
-          className={`hidden sm:flex absolute left-0 lg:left-4 top-1/2 -translate-y-1/2 z-10 p-3 lg:p-4 rounded-full ${
+          className={` flex items-center justify-center w-12 h-12 text-xl sm:flex absolute left-0 lg:left-4 top-1/2 -translate-y-1/2 z-10 p-3 lg:p-4 rounded-full ${
             darkMode
               ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
               : "bg-white border-[#5C2E2E]/10 hover:bg-gray-50"
@@ -89,7 +92,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         {/* Right Arrow - Hidden on mobile, visible on tablet+ */}
         <button
           onClick={() => scroll("right")}
-          className={`hidden sm:flex absolute right-0 lg:right-4 top-1/2 -translate-y-1/2 z-10 p-3 lg:p-4 rounded-full ${
+          className={`flex items-center justify-center w-12 h-12 sm:flex absolute right-0 lg:right-4 top-1/2 -translate-y-1/2 z-10 p-3 lg:p-4 rounded-full text-xl ${
             darkMode
               ? "bg-gray-800 border-gray-700 hover:bg-gray-700"
               : "bg-white border-[#5C2E2E]/10 hover:bg-gray-50"
@@ -116,7 +119,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
       {/* Progress Bar */}
       <div
-        className={`mt-6 sm:mt-8 lg:mt-10 mx-4 sm:mx-0 h-3 sm:h-4 rounded-full overflow-hidden ${
+        className={`mt-4 sm:mt-8 lg:mt-10 mx-4 sm:mx-0 h-3 sm:h-4 rounded-full overflow-hidden ${
           darkMode ? "bg-gray-700" : "bg-[#EAD7C0]"
         } shadow-inner`}
       >

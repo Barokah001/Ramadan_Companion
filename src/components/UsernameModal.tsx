@@ -1,4 +1,4 @@
-// src/components/UsernameModal.tsx - Fully Responsive
+// src/components/UsernameModal.tsx - PROPER SIZING
 
 import React, { useState } from "react";
 import { User, AlertCircle, CheckCircle, Loader } from "lucide-react";
@@ -38,50 +38,37 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div
-        className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl border max-w-md w-full transform transition-all`}
+        className={`flex flex-col gap-3 items-center justify-center w-full max-w-sm h-90 px-10 ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        } rounded-2xl shadow-2xl`}
+        style={{ maxWidth: "450px" }}
       >
-        {/* Header */}
-        <div className="flex items-start gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <div
-            className={`p-3 sm:p-4 rounded-full flex-shrink-0 shadow-lg ${
-              darkMode ? "bg-amber-600" : "bg-[#8B4545]"
-            }`}
-          >
-            <User className="text-white" size={24} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2
-              className={`text-2xl sm:text-3xl font-bold ${
-                darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-              } mb-2`}
-              style={{ fontFamily: "Playfair Display, serif" }}
-            >
-              Welcome to Ramadan Companion!
-            </h2>
-            <p
-              className={`text-sm sm:text-base ${
-                darkMode ? "text-gray-400" : "text-[#8B4545]"
-              }`}
-            >
-              Choose your unique username to begin
-            </p>
-          </div>
-        </div>
+
+        {/* Title */}
+        <h2
+          className={`text-l font-bold text-center mb-1 ${
+            darkMode ? "text-gray-100" : "text-[#5C2E2E]"
+          }`}
+        >
+          Welcome to Ramadan Companion!
+        </h2>
+
+        <p
+          className={`text-center text-l mb- ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
+        >
+          Choose your unique username to begin
+        </p>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="username"
-              className={`block text-sm sm:text-base font-medium ${
-                darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-              } mb-2 sm:mb-3`}
+              className={`block text-l font-medium mb-1.5 ${
+                darkMode ? "text-gray-200" : "text-[#5C2E2E]"
+              }`}
             >
               Username
             </label>
@@ -91,76 +78,56 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g., abdullah_123"
-              className={`w-full px-4 py-3 sm:py-4 rounded-xl text-base ${
+              className={`w-full h-8 px-3 py-2.5 rounded-lg text-l border-none ${
                 darkMode
-                  ? "bg-gray-700 text-gray-100 border-gray-600 placeholder-gray-400"
-                  : "bg-gray-50 text-[#5C2E2E] border-[#5C2E2E]/10 placeholder-gray-400"
-              } border focus:outline-none focus:ring-2 ${
-                darkMode ? "focus:ring-amber-500" : "focus:ring-[#8B4545]"
-              } transition-all`}
+                  ? "bg-gray-700 text-gray-100 border-gray-600"
+                  : "bg-gray-50 text-[#5C2E2E]"
+              } focus:outline-none focus:ring-${
+                darkMode ? "amber-500" : "[#8B4545]"
+              }`}
               disabled={isSubmitting}
               autoFocus
-              autoComplete="off"
             />
             <p
-              className={`text-xs sm:text-sm ${
-                darkMode ? "text-gray-400" : "text-[#8B4545]"
-              } mt-2`}
+              className={`text-sm mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
             >
-              3-20 characters • lowercase letters, numbers, hyphens and
-              underscores only
+              3-20 characters • lowercase, numbers, - and _
             </p>
           </div>
 
-          {/* Message Display */}
           {message && (
             <div
-              className={`flex items-start gap-3 p-4 rounded-xl transition-all ${
+              className={`flex items-start gap-2 p-2.5 rounded-lg text-xs ${
                 message.type === "error"
-                  ? darkMode
-                    ? "bg-red-900/20 border-red-700"
-                    : "bg-red-50 border-red-200"
-                  : darkMode
-                    ? "bg-green-900/20 border-green-700"
-                    : "bg-green-50 border-green-200"
-              } border`}
+                  ? "bg-red-50 text-red-700"
+                  : "bg-green-50 text-green-700"
+              }`}
             >
-              <div className="flex-shrink-0 mt-0.5">
-                {message.type === "error" ? (
-                  <AlertCircle className="text-red-500" size={20} />
-                ) : (
-                  <CheckCircle className="text-green-500" size={20} />
-                )}
-              </div>
-              <p
-                className={`text-sm sm:text-base flex-1 ${
-                  message.type === "error"
-                    ? darkMode
-                      ? "text-red-300"
-                      : "text-red-700"
-                    : darkMode
-                      ? "text-green-300"
-                      : "text-green-700"
-                }`}
-              >
-                {message.text}
-              </p>
+              {message.type === "error" ? (
+                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+              ) : (
+                <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
+              )}
+              <span>{message.text}</span>
             </div>
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting || username.trim().length < 3}
-            className={`w-full py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+            className={`w-full h-8 py-2.5 rounded-lg font-medium text-sm ${
               darkMode
                 ? "bg-amber-600 hover:bg-amber-700 text-white"
                 : "bg-[#8B4545] hover:bg-[#6B3535] text-white"
+            } ${
+              isSubmitting || username.trim().length < 3
+                ? "opacity-50 cursor-not-allowed"
+                : ""
             } flex items-center justify-center gap-2`}
           >
             {isSubmitting ? (
               <>
-                <Loader className="animate-spin" size={20} />
+                <Loader className="animate-spin" size={14} />
                 <span>Setting username...</span>
               </>
             ) : (
@@ -169,38 +136,14 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
           </button>
         </form>
 
-        {/* Info Box */}
-        <div
-          className={`mt-6 sm:mt-8 p-4 sm:p-5 rounded-xl ${
-            darkMode ? "bg-gray-700" : "bg-[#EAD7C0]/50"
-          }`}
-        >
-          <p
-            className={`text-sm sm:text-base ${
-              darkMode ? "text-gray-300" : "text-[#8B4545]"
-            } leading-relaxed`}
-          >
-            <strong
-              className={`block mb-2 ${
-                darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-              }`}
-            >
-              Why username?
-            </strong>
-            Your username personalizes your experience and helps us provide
-            tailored spiritual insights just for you. It's your unique
-            identifier on your Ramadan journey.
-          </p>
-        </div>
 
-        {/* Decorative Element */}
-        <div className="mt-6 text-center">
+        {/* Footer */}
+        <div className=" flex items-center justify-center mt-3 text-center">
+          <p className="text-l">🌙</p>
           <p
-            className={`text-2xl sm:text-3xl ${
-              darkMode ? "text-amber-500" : "text-[#8B4545]"
-            }`}
+            className={`text-xs ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
           >
-            🌙
+            Ramadan Mubarak
           </p>
         </div>
       </div>
