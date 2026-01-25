@@ -22,7 +22,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
         <div className="flex items-center gap-5">
           <div
-            className={`p-4 rounded-3xl ${darkMode ? "bg-amber-600 shadow-amber-900/40" : "bg-[#8B4545] shadow-[#8B4545]/20"} shadow-xl`}
+            className={`p-2 rounded-3xl ${darkMode ? "bg-amber-600 shadow-amber-900/40" : "bg-[#8B4545] shadow-[#8B4545]/20"} shadow-xl`}
           >
             <Heart size={28} className="text-white" fill="currentColor" />
           </div>

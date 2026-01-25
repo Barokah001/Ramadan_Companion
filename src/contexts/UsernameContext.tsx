@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-// src/contexts/UsernameContext.tsx - Using Supabase
+// src/contexts/UsernameContext.tsx - Fixed with localStorage for device-specific storage
 
 import React, {
   createContext,
@@ -28,13 +28,14 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
   const [username, setUsernameState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load username on mount
+  // Load username on mount - NOW USES LOCALSTORAGE
   useEffect(() => {
     const loadUsername = async () => {
       try {
-        const stored = await storage.get("ramadan-username");
-        if (stored && stored.value) {
-          setUsernameState(stored.value);
+        // Use browser's localStorage for device-specific storage
+        const stored = localStorage.getItem("ramadan-username");
+        if (stored) {
+          setUsernameState(stored);
         }
       } catch (error) {
         console.error("Failed to load username:", error);
@@ -78,7 +79,7 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     try {
-      // Check if username is already taken
+      // Check if username is already taken in Supabase
       const existingUsers = await storage.list("user:");
 
       if (existingUsers && existingUsers.keys) {
@@ -94,17 +95,10 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
         }
       }
 
-      // Save username locally
-      const saveResult = await storage.set("ramadan-username", trimmedUsername);
+      // Save username locally in browser's localStorage (device-specific)
+      localStorage.setItem("ramadan-username", trimmedUsername);
 
-      if (!saveResult) {
-        return {
-          success: false,
-          message: "Failed to save username. Please try again.",
-        };
-      }
-
-      // Register username globally
+      // Register username globally in Supabase (for checking uniqueness)
       await storage.set(
         `user:${trimmedUsername}`,
         JSON.stringify({

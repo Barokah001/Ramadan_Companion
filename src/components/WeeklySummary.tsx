@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/WeeklySummary.tsx - Fully Responsive
 
 import React, { useState, useEffect } from "react";

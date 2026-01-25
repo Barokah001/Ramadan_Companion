@@ -1,7 +1,7 @@
 // src/components/UsernameModal.tsx - PROPER SIZING
 
 import React, { useState } from "react";
-import { User, AlertCircle, CheckCircle, Loader } from "lucide-react";
+import { AlertCircle, CheckCircle, Loader } from "lucide-react";
 
 interface UsernameModalProps {
   darkMode: boolean;

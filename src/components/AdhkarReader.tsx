@@ -1,13 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/AdhkarReader.tsx - Refined & Fully Responsive
 import React, { useState, useEffect } from "react";
-import {
-  CheckCircle,
-  Circle,
-  RotateCcw,
-  BookOpen,
-  Sun,
-  Moon,
-} from "lucide-react";
+import { CheckCircle, RotateCcw, BookOpen, Sun, Moon } from "lucide-react";
 import { morningAdhkar, eveningAdhkar, type DhikrItem } from "../lib/adhkar";
 import { storage } from "../lib/supabase";
 

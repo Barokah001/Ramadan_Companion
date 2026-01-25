@@ -29,7 +29,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
   return (
     <div
-      className={`flex flex-col items-center justify-center group w-120 h-90 p-4 text-wrap md:p-12 rounded-[2.5rem] shadow-2xl transition-all duration-500 ${
+      className={`flex flex-col items-center justify-center group p-4 text-wrap md:p-12 rounded-[2.5rem] shadow-2xl transition-all duration-500 ${
         darkMode ? "bg-gray-800 border-gray-700/50" : "bg-white border-white"
       } border-4`}
     >
