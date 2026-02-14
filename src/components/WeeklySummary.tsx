@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/WeeklySummary.tsx - Fully Responsive
+// src/components/WeeklySummary.tsx - FIXED with username scoping
 
 import React, { useState, useEffect } from "react";
 import {
@@ -33,11 +33,12 @@ interface AIInsight {
 
 interface WeeklySummaryProps {
   darkMode?: boolean;
-  userId?: string;
+  username: string; // ADDED USERNAME PROP
 }
 
 export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
   darkMode = false,
+  username, // NOW REQUIRED
 }) => {
   const [weekData, setWeekData] = useState<DayData[]>([]);
   const [aiInsight, setAiInsight] = useState<AIInsight | null>(null);
@@ -46,7 +47,7 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
 
   useEffect(() => {
     loadWeekData();
-  }, []);
+  }, [username]); // Added username dependency
 
   const loadWeekData = async () => {
     setLoading(true);
@@ -59,7 +60,8 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
       const dateStr = date.toISOString().split("T")[0];
 
       try {
-        const stored = await storage.get(`daily-tasks-${dateStr}`);
+        // FIXED: Now scoped by username
+        const stored = await storage.get(`daily-tasks:${username}:${dateStr}`);
         if (stored) {
           const dayData = JSON.parse(stored.value);
 
@@ -124,7 +126,8 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
 
     try {
       const weekStart = data[0]?.date || new Date().toISOString().split("T")[0];
-      const stored = await storage.get(`ai-feedback-${weekStart}`);
+      // FIXED: Now scoped by username
+      const stored = await storage.get(`ai-feedback:${username}:${weekStart}`);
 
       if (stored) {
         setAiInsight(JSON.parse(stored.value));
@@ -168,7 +171,8 @@ export const WeeklySummary: React.FC<WeeklySummaryProps> = ({
         ],
       };
 
-      await storage.set(`ai-feedback-${weekStart}`, JSON.stringify(insights));
+      // FIXED: Now scoped by username
+      await storage.set(`ai-feedback:${username}:${weekStart}`, JSON.stringify(insights));
       setAiInsight(insights);
     } catch (err) {
       console.error("AI generation failed:", err);

@@ -1,4 +1,4 @@
-// src/lib/adhkar.ts
+// src/lib/adhkar.ts - FIXED: All duplicate IDs removed
 
 export interface DhikrItem {
   id: string;
@@ -187,17 +187,6 @@ export const morningAdhkar: DhikrItem[] = [
     category: "general",
   },
   {
-    id: "morning-protection-forgiveness",
-    arabic:
-      "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي، وَدُنْيَايَ، وَأَهْلِي، وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي...",
-    transliteration:
-      "Allaahumma 'innee 'as'alukal-'afwa wal'aafiyata fid-dunyaa wal'aakhirati...",
-    translation:
-      "O Allah, I ask You for pardon and well-being in this world and the next...",
-    repetitions: 1,
-    category: "protection",
-  },
-  {
     id: "ya-hayyu-ya-qayyum",
     arabic:
       "يَاحَيُّ، يَا قَيُّومُ، بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ",
@@ -205,28 +194,6 @@ export const morningAdhkar: DhikrItem[] = [
       "Yaa Hayyu yaa Qayyoomu birahmatika 'astagheethu 'aslih lee sha'nee kullahu wa laa takilnee 'ilaa nafsee tarfata 'aynin.",
     translation:
       "O Ever Living One, O Self-Sustaining One, in Your mercy I seek relief...",
-    repetitions: 1,
-    category: "general",
-  },
-  {
-    id: "subhan-allah-creation",
-    arabic:
-      "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ وَمِدَادَ كَلِمَاتِهِ",
-    transliteration:
-      "Subhaanallaahi wa bihamdihi: 'Adada khalqihi, wa ridhaa nafsihi, wa zinata 'arshihi wa midaada kalimaatihi.",
-    translation:
-      "How perfect Allah is and I praise Him by the number of His creation...",
-    repetitions: 3,
-    category: "general",
-  },
-  {
-    id: "useful-knowledge",
-    arabic:
-      "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْماً نَافِعاً، وَ رِزْقاً طَيِّباً، وَ عَمَلاً مُتَقَبَّلاً",
-    transliteration:
-      "Allaahumma 'innee 'as'aluka 'ilman naafi'an, wa rizqan tayyiban, wa 'amalan mutaqabbalan.",
-    translation:
-      "O Allah, I ask You for knowledge that is of benefit, a good provision...",
     repetitions: 1,
     category: "general",
   },
@@ -301,7 +268,7 @@ export const eveningAdhkar: DhikrItem[] = [
     category: "protection",
   },
   {
-    id: "ya-hayyu-ya-qayyum",
+    id: "evening-ya-hayyu-ya-qayyum",
     arabic:
       "يَاحَيُّ، يَا قَيُّومُ، بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ",
     transliteration:
@@ -323,7 +290,7 @@ export const eveningAdhkar: DhikrItem[] = [
     category: "general",
   },
   {
-    id: "fitrat-islam",
+    id: "evening-fitrat-islam",
     arabic:
       "أَمْسَيْنَا عَلَى فِطْرَةِ الْإِسْلَامِ، وَعَلَى كَلِمَةِ الإِخْلَاصِ، وَعَلَى دِينِ نَبِـيِّنَا مُحَمَّدٍ...",
     transliteration:
@@ -342,37 +309,6 @@ export const eveningAdhkar: DhikrItem[] = [
       "I seek refuge in the perfect words of Allah from the evil of what He has created.",
     repetitions: 3,
     category: "protection",
-  },
-  {
-    id: "evening-protection-creation",
-    arabic: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
-    transliteration:
-      "'A'oothu bikalimaatil-laahit-taammaati min sharri maa khalaqa.",
-    translation:
-      "I seek refuge in the perfect words of Allah from the evil of what He has created.",
-    repetitions: 3,
-    category: "protection",
-  },
-  {
-    id: "evening-fitrat-islam",
-    arabic:
-      "أَمْسَيْنَا عَلَى فِطْرَةِ الْإِسْلَامِ، وَعَلَى كَلِمَةِ الإِخْلَاصِ، وَعَلَى دِينِ نَبِـيِّنَا مُحَمَّدٍ...",
-    transliteration:
-      "Amsaynaa 'alaa fitratil-'Islaami wa 'alaa kalimatil-'ikhlaasi...",
-    translation:
-      "We have reached the evening upon the natural religion of Islam...",
-    repetitions: 1,
-    category: "general",
-  },
-  {
-    id: "evening-blessings-request",
-    arabic:
-      "أَمْسَيْنا وَأَمْسَى الْمُلْكُ لِلَّهِ رَبِّ الْعَالَمِينَ، اللَّهُمَّ إِنِّـي أَسْأَلُكَ خَـيْرَ هَذَه اللَّـيْلَة، فَتْحَهُ، وَنَصْرَهُ...",
-    transliteration: "Amsaynaa wa 'amsal-mulku lillaahi Rabbil-'aalameen...",
-    translation:
-      "We have reached the evening and all sovereignty belongs to Allah...",
-    repetitions: 1,
-    category: "general",
   },
 ];
 

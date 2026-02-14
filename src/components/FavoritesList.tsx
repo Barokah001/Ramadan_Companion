@@ -1,4 +1,5 @@
-// src/components/FavoritesList.tsx - Refined Grid
+// src/components/FavoritesList.tsx - Fixed to accept username prop
+
 import React from "react";
 import { Heart, Trash2 } from "lucide-react";
 import { QuoteCard } from "./QuoteCard";
@@ -7,10 +8,12 @@ import { quotes } from "../lib/quotes";
 
 interface FavoritesListProps {
   darkMode?: boolean;
+  username: string; // ADDED USERNAME PROP
 }
 
 export const FavoritesList: React.FC<FavoritesListProps> = ({
   darkMode = false,
+  username, // Now accepts username (though context handles the actual scoping)
 }) => {
   const { favorites, clearFavorites } = useFavorites();
   const favoriteQuotes = quotes.filter((quote) => favorites.includes(quote.id));
@@ -22,19 +25,19 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
         <div className="flex items-center gap-5">
           <div
-            className={`p-2 rounded-3xl ${darkMode ? "bg-amber-600 shadow-amber-900/40" : "bg-[#8B4545] shadow-[#8B4545]/20"} shadow-xl`}
+            className={`p-4 rounded-3xl ${darkMode ? "bg-amber-600 shadow-amber-900/40" : "bg-[#8B4545] shadow-[#8B4545]/20"} shadow-xl`}
           >
             <Heart size={28} className="text-white" fill="currentColor" />
           </div>
           <div>
             <h2
-              className={`text-3xl font-black tracking-tight ${darkMode ? "text-white" : "text-[#5C2E2E]"}`}
+              className={`text-3xl font-bold tracking-tight ${darkMode ? "text-white" : "text-[#5C2E2E]"}`}
               style={{ fontFamily: "Playfair Display, serif" }}
             >
               Saved Wisdom
             </h2>
             <p
-              className={`text-sm font-bold opacity-60 uppercase tracking-widest ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
+              className={`text-sm font-medium ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
             >
               {favorites.length}{" "}
               {favorites.length === 1 ? "Inspiration" : "Inspirations"}
@@ -44,10 +47,10 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
 
         <button
           onClick={clearFavorites}
-          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-md ${
+          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-md ${
             darkMode
-              ? "bg-gray-800 text-red-400 border border-gray-700 hover:bg-gray-700"
-              : "bg-white text-red-600 border border-red-50 hover:bg-red-50"
+              ? "bg-gray-700 text-red-400 hover:bg-gray-600"
+              : "bg-red-50 text-red-600 hover:bg-red-100"
           }`}
         >
           <Trash2 size={16} />
@@ -61,7 +64,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
             key={quote.id}
             className="flex justify-center transition-all duration-300 hover:-translate-y-2"
           >
-            <QuoteCard quote={quote} darkMode={darkMode} />
+            <QuoteCard quote={quote} darkMode={darkMode} username={username} />
           </div>
         ))}
       </div>

@@ -1,4 +1,4 @@
-// src/lib/supabase.ts - Proper Supabase Integration
+// src/lib/supabase.ts - Fixed Supabase Integration
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -9,7 +9,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create client with proper configuration
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false, // We're not using auth
+  },
+  db: {
+    schema: 'public',
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Prefer': 'return=representation',
+    },
+  },
+});
 
 // Storage API implementation using Supabase
 export const storage = {
@@ -19,13 +34,14 @@ export const storage = {
         .from('storage')
         .select('key, value')
         .eq('key', key)
-        .single();
+        .maybeSingle(); // Changed from .single() to .maybeSingle()
 
       if (error) {
+        // Handle "not found" gracefully
         if (error.code === 'PGRST116') {
-          // No rows returned - key doesn't exist
           return null;
         }
+        console.error('Storage get error:', error);
         throw error;
       }
 
@@ -47,7 +63,10 @@ export const storage = {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage set error:', error);
+        throw error;
+      }
 
       return data;
     } catch (error) {
@@ -63,7 +82,10 @@ export const storage = {
         .delete()
         .eq('key', key);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage delete error:', error);
+        throw error;
+      }
 
       return { key, deleted: true };
     } catch (error) {
@@ -82,7 +104,10 @@ export const storage = {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage list error:', error);
+        throw error;
+      }
 
       const keys = data?.map(item => item.key) || [];
       return { keys };
@@ -100,7 +125,10 @@ export const storage = {
         .select('key, value')
         .in('key', keys);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage getMany error:', error);
+        throw error;
+      }
 
       const result: Record<string, string> = {};
       data?.forEach(item => {
@@ -126,7 +154,10 @@ export const storage = {
         .from('storage')
         .upsert(records, { onConflict: 'key' });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage setMany error:', error);
+        throw error;
+      }
 
       return true;
     } catch (error) {
@@ -143,7 +174,10 @@ export const storage = {
         .delete()
         .neq('key', ''); // Delete all rows
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage clear error:', error);
+        throw error;
+      }
 
       return true;
     } catch (error) {

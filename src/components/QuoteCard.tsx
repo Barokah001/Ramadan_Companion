@@ -1,17 +1,20 @@
-// src/components/QuoteCard.tsx - Refined Styling
+// src/components/QuoteCard.tsx - Fixed to accept username prop
+
 import React from "react";
 import { Heart } from "lucide-react";
 import { useFavorites } from "../contexts/FavoritesContext";
-import type { Quote } from "../types";
+import type { Quote } from "../lib/quotes";
 
 interface QuoteCardProps {
   quote: Quote;
   darkMode?: boolean;
+  username?: string; // ADDED USERNAME PROP (optional - not directly used but passed from App for consistency)
 }
 
 export const QuoteCard: React.FC<QuoteCardProps> = ({
   quote,
   darkMode = false,
+  username, // Now accepts username (context handles the actual scoping)
 }) => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const isQuoteFavorite = isFavorite(quote.id);
@@ -29,20 +32,23 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
   return (
     <div
-      className={`flex flex-col items-center justify-center group p-4 text-wrap md:p-12 rounded-[2.5rem] shadow-2xl transition-all duration-500 ${
+      className={`flex flex-col items-center justify-center group p-8 md:p-12 rounded-[2.5rem] shadow-2xl transition-all duration-500 ${
         darkMode ? "bg-gray-800 border-gray-700/50" : "bg-white border-white"
       } border-4`}
     >
-      <div className="relative w-1/2 flex gap-4 justify-center items-center mt-2">
+      <div className="relative w-full flex gap-4 justify-between items-center mb-2">
         <span
-          className={`flex items-center justify-center h-7 w-36 rounded-full text-[12px] font-black uppercase text-white ${getCategoryColor()}`}
+          className={`flex items-center justify-center px-4 py-2 rounded-full text-xs font-bold uppercase text-white ${getCategoryColor()}`}
         >
           {quote.category.replace(/_/g, " ")}
         </span>
 
         <button
           onClick={() => toggleFavorite(quote.id)}
-          className="absolute -right-18 p-3 rounded-2xl transition-all hover:bg-red-50 dark:hover:bg-red-900/20"
+          className={`p-3 rounded-2xl transition-all ${
+            darkMode ? "hover:bg-red-900/20" : "hover:bg-red-50"
+          }`}
+          aria-label={isQuoteFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart
             size={24}
@@ -50,7 +56,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             className={
               isQuoteFavorite
                 ? "text-red-600"
-                : "text-gray-300 dark:text-gray-600"
+                : darkMode ? "text-gray-600" : "text-gray-300"
             }
           />
         </button>
@@ -60,7 +66,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
         <p
           className={`text-2xl md:text-3xl text-center font-serif italic leading-relaxed mb-8 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
         >
-          “{quote.text}”
+          "{quote.text}"
         </p>
 
         {quote.arabic && (
@@ -72,7 +78,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
           </p>
         )}
 
-        <div className="w-16 h-0.5 bg-gray-100 dark:bg-gray-700 mb-6" />
+        <div className={`w-16 h-0.5 ${darkMode ? "bg-gray-700" : "bg-gray-100"} mb-6`} />
 
         <div className="text-center">
           <p
@@ -82,7 +88,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
           </p>
           {quote.reference && (
             <p
-              className={`text-sm font-medium mt-1 opacity-60 ${darkMode ? "text-gray-500" : "text-[#8B4545]"}`}
+              className={`text-sm font-medium mt-1 ${darkMode ? "text-gray-500" : "text-[#8B4545]"} opacity-60`}
             >
               {quote.reference}
             </p>

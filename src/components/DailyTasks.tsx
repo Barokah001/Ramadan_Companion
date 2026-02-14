@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
-// src/components/DailyTasks.tsx - PROPERLY SIZED
+// src/components/DailyTasks.tsx - FIXED with username scoping
 
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, Calendar } from "lucide-react";
@@ -20,11 +19,12 @@ interface Prayer {
 
 interface DailyTasksProps {
   darkMode?: boolean;
+  username: string; // ADDED USERNAME PROP
 }
 
 const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
-export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
+export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, username }) => {
   const [prayers, setPrayers] = useState<Prayer[]>(() =>
     PRAYERS.map((name) => ({ name, completed: false })),
   );
@@ -38,7 +38,8 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
     const loadData = async () => {
       try {
         const today = new Date().toISOString().split("T")[0];
-        const stored = await storage.get(`daily-tasks-${today}`);
+        // FIXED: Now scoped by username
+        const stored = await storage.get(`daily-tasks:${username}:${today}`);
         if (stored) {
           const data = JSON.parse(stored.value);
           setPrayers(data.prayers || prayers);
@@ -52,14 +53,15 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
       }
     };
     loadData();
-  }, []);
+  }, [username]); // Added username dependency
 
   useEffect(() => {
     const saveData = async () => {
       try {
         const today = new Date().toISOString().split("T")[0];
+        // FIXED: Now scoped by username
         await storage.set(
-          `daily-tasks-${today}`,
+          `daily-tasks:${username}:${today}`,
           JSON.stringify({
             prayers,
             quranPages,
@@ -73,7 +75,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false }) => {
       }
     };
     saveData();
-  }, [prayers, quranPages, customTasks, morningDhikr, eveningDhikr]);
+  }, [prayers, quranPages, customTasks, morningDhikr, eveningDhikr, username]); // Added username dependency
 
   const togglePrayer = (index: number) => {
     setPrayers((prev) =>

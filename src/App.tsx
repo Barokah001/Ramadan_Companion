@@ -1,4 +1,4 @@
-// src/App.tsx - Improved Responsive Version
+// src/App.tsx - Fixed to pass username to all components
 
 import React, { useState, useEffect } from "react";
 import {
@@ -35,7 +35,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const loadTheme = async () => {
+      if (!username) return;
+      
       try {
+        // Theme can be user-specific or global - your choice
+        // Using global theme here (no username prefix)
         const stored = await window.storage.get("theme");
         if (stored && stored.value === "dark") {
           setDarkMode(true);
@@ -45,7 +49,7 @@ const App: React.FC = () => {
       }
     };
     loadTheme();
-  }, []);
+  }, [username]);
 
   const toggleDarkMode = async () => {
     const newMode = !darkMode;
@@ -111,7 +115,7 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen ${bgColor} transition-colors duration-300`}>
-      {/* Header - Improved responsive design */}
+      {/* Header */}
       <header className={`${cardBg} ${borderColor} border-b shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-opacity-95`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
@@ -141,7 +145,6 @@ const App: React.FC = () => {
                 )}
               </button>
 
-              {/* Mobile menu button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className={`md:hidden p-2 rounded-lg ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"} transition-colors`}
@@ -158,10 +161,9 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Navigation - Desktop and Mobile */}
+      {/* Navigation */}
       <nav className={`${cardBg} ${borderColor} border-b shadow-md sticky top-[61px] sm:top-[73px] z-40 ${mobileMenuOpen ? "block" : "hidden md:block"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Desktop Navigation */}
           <div className="hidden md:flex gap-2 overflow-x-auto py-3 hide-scrollbar">
             {navItems.map(({ id, label, icon: Icon }) => (
               <button
@@ -179,7 +181,6 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          {/* Mobile Navigation */}
           <div className="md:hidden py-2 space-y-1">
             {navItems.map(({ id, label, icon: Icon }) => (
               <button
@@ -199,12 +200,11 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Main Content - Improved spacing and responsiveness */}
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         {/* HOME VIEW */}
         {currentView === "home" && (
           <div className="space-y-12 lg:space-y-16">
-            {/* Daily Wisdom Section */}
             <section>
               <div className="text-center mb-8 sm:mb-10">
                 <h2
@@ -218,17 +218,16 @@ const App: React.FC = () => {
                 </p>
               </div>
 
-              {/* Quote Display */}
               <div className="flex items-center justify-center mb-8">
                 <div className="w-full max-w-2xl">
                   <QuoteCard
                     quote={quotes[currentQuoteIndex]}
                     darkMode={darkMode}
+                    username={username}
                   />
                 </div>
               </div>
 
-              {/* Navigation Controls */}
               <div className="flex justify-center items-center gap-3 sm:gap-4 mb-4">
                 <button
                   onClick={prevQuote}
@@ -255,22 +254,18 @@ const App: React.FC = () => {
                 </button>
               </div>
 
-              {/* Counter */}
               <p className={`text-center text-sm sm:text-base ${textSecondary} font-medium`}>
                 Quote {currentQuoteIndex + 1} of {quotes.length}
               </p>
             </section>
 
-            {/* Favorites Section */}
-            <FavoritesList darkMode={darkMode} />
-
-            {/* Image Gallery Section */}
+            <FavoritesList darkMode={darkMode} username={username} />
             <ImageGallery darkMode={darkMode} />
           </div>
         )}
 
-        {/* TASKS VIEW */}
-        {currentView === "tasks" && <DailyTasks darkMode={darkMode} />}
+        {/* TASKS VIEW - NOW PASSES USERNAME */}
+        {currentView === "tasks" && <DailyTasks darkMode={darkMode} username={username} />}
 
         {/* ADHKAR VIEW */}
         {currentView === "dhikr" && <AdhkarReader darkMode={darkMode} />}
@@ -283,6 +278,7 @@ const App: React.FC = () => {
                 <QuoteCard
                   quote={quotes[currentQuoteIndex]}
                   darkMode={darkMode}
+                  username={username}
                 />
               </div>
             </div>
@@ -314,17 +310,17 @@ const App: React.FC = () => {
               Quote {currentQuoteIndex + 1} of {quotes.length}
             </p>
 
-            <FavoritesList darkMode={darkMode} />
+            <FavoritesList darkMode={darkMode} username={username} />
           </div>
         )}
 
-        {/* WEEKLY SUMMARY VIEW */}
+        {/* WEEKLY SUMMARY VIEW - NOW PASSES USERNAME */}
         {currentView === "weekly" && (
-          <WeeklySummary darkMode={darkMode} userId={username} />
+          <WeeklySummary darkMode={darkMode} username={username} />
         )}
       </main>
 
-      {/* Footer - Improved design */}
+      {/* Footer */}
       <footer className={`${cardBg} ${borderColor} border-t mt-16 sm:mt-20 shadow-lg`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 text-center">
           <p className={`text-base sm:text-lg ${textSecondary} mb-2 font-medium`}>

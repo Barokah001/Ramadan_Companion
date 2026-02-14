@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-
-// src/contexts/FavoritesContext.tsx - Using Supabase
+// src/contexts/FavoritesContext.tsx - FIXED with username scoping
 
 import React, {
   createContext,
@@ -10,6 +9,7 @@ import React, {
   type ReactNode,
 } from "react";
 import { storage } from "../lib/supabase";
+import { useUsername } from "./UsernameContext";
 
 interface FavoritesContextType {
   favorites: number[];
@@ -25,14 +25,18 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(
 export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const { username } = useUsername(); // GET USERNAME FROM CONTEXT
   const [favorites, setFavorites] = useState<number[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load favorites from Supabase on mount
   useEffect(() => {
+    if (!username) return; // Don't load if no username yet
+
     const loadFavorites = async () => {
       try {
-        const stored = await storage.get("ramadan-favorites");
+        // FIXED: Now scoped by username
+        const stored = await storage.get(`favorites:${username}`);
         if (stored && stored.value) {
           setFavorites(JSON.parse(stored.value));
         }
@@ -43,21 +47,22 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({
       }
     };
     loadFavorites();
-  }, []);
+  }, [username]); // Re-load when username changes
 
   // Save favorites to Supabase whenever they change
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && username) {
       const saveFavorites = async () => {
         try {
-          await storage.set("ramadan-favorites", JSON.stringify(favorites));
+          // FIXED: Now scoped by username
+          await storage.set(`favorites:${username}`, JSON.stringify(favorites));
         } catch (error) {
           console.error("Failed to save favorites:", error);
         }
       };
       saveFavorites();
     }
-  }, [favorites, isLoaded]);
+  }, [favorites, isLoaded, username]);
 
   const toggleFavorite = (id: number) => {
     setFavorites((prev) =>
