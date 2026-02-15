@@ -81,7 +81,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
             className={`mb-4 ${darkMode ? "text-gray-700" : "text-[#8B4545]/20"}`}
           />
           <p
-            className={`text-xl font-black ${darkMode ? "text-gray-700" : "text-[#8B4545]/40"}`}
+            className={`text-xl font-black w-[20px] ${darkMode ? "text-gray-700" : "text-[#8B4545]/40"}`}
           >
             DAY {image.day}
           </p>

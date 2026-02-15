@@ -6,7 +6,7 @@ import { useUnlockedDays } from "../hooks/useUnlockedDays";
 import { ImageCard } from "./ImageCard";
 import { dailyImages } from "../lib/images";
 
-const RAMADAN_START_DATE = "2026-02-15";
+const RAMADAN_START_DATE = "2026-02-14";
 
 interface ImageGalleryProps {
   darkMode?: boolean;
