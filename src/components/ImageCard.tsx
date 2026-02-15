@@ -68,7 +68,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
           <div className="absolute top-4 flex items-center justify-center w-8 h-8 left-4 p-3 rounded-2xl bg-green-500 shadow-lg text-white">
             <Unlock size={18} />
           </div>
-          <div className="absolute top-4 right-4 px-4 py-2 flex items-center justify-center w-12 h-8 rounded-2xl bg-black/40 backdrop-blur-md text-white font-black text-xs">
+          <div className="absolute top-4 right-4 px-4 py-2 flex items-center justify-center w-20 h-8 rounded-2xl bg-black/40 backdrop-blur-md text-white font-black text-xs">
             DAY {image.day}
           </div>
         </>
@@ -81,7 +81,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
             className={`mb-4 ${darkMode ? "text-gray-700" : "text-[#8B4545]/20"}`}
           />
           <p
-            className={`text-xl font-black w-[20px] ${darkMode ? "text-gray-700" : "text-[#8B4545]/40"}`}
+            className={`text-xl font-black ${darkMode ? "text-gray-700" : "text-[#8B4545]/40"}`}
           >
             DAY {image.day}
           </p>
