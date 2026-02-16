@@ -57,11 +57,7 @@ interface AIInsight {
 }
 
 // Daily Journal View Component
-const DailyJournalView: React.FC<DailyJournalViewProps> = ({
-  date,
-  username,
-  darkMode,
-}) => {
+const DailyJournalView: React.FC<DailyJournalViewProps> = ({ date, username, darkMode }) => {
   const [dayData, setDayData] = useState<{
     prayers?: Prayer[];
     quranPages?: number;
@@ -89,9 +85,7 @@ const DailyJournalView: React.FC<DailyJournalViewProps> = ({
 
   if (loading) {
     return (
-      <div
-        className={`p-4 border-t ${darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"} text-center`}
-      >
+      <div className={`p-4 border-t ${darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"} text-center`}>
         <Loader className="animate-spin mx-auto" size={24} />
       </div>
     );
@@ -99,12 +93,8 @@ const DailyJournalView: React.FC<DailyJournalViewProps> = ({
 
   if (!dayData) {
     return (
-      <div
-        className={`p-4 border-t ${darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`}
-      >
-        <p
-          className={`text-center ${darkMode ? "text-gray-400" : "text-gray-600"}`}
-        >
+      <div className={`p-4 border-t ${darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`}>
+        <p className={`text-center ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
           No data for this day
         </p>
       </div>
@@ -116,14 +106,10 @@ const DailyJournalView: React.FC<DailyJournalViewProps> = ({
   const PRAYER_NAMES = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
   return (
-    <div
-      className={`p-6 border-t ${darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"} space-y-6`}
-    >
+    <div className={`p-6 border-t ${darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"} space-y-6`}>
       {/* Prayers Section */}
       <div>
-        <h4
-          className={`font-semibold mb-3 flex items-center gap-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
-        >
+        <h4 className={`font-semibold mb-3 flex items-center gap-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}>
           <CheckCircle size={18} className="text-green-500" />
           Daily Prayers
         </h4>
@@ -158,45 +144,31 @@ const DailyJournalView: React.FC<DailyJournalViewProps> = ({
 
       {/* Quran & Adhkar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div
-          className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-blue-50"}`}
-        >
-          <p
-            className={`text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-[#5C2E2E]"}`}
-          >
+        <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-blue-50"}`}>
+          <p className={`text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-[#5C2E2E]"}`}>
             Quran Pages
           </p>
-          <p
-            className={`text-3xl font-bold ${darkMode ? "text-blue-400" : "text-blue-600"}`}
-          >
+          <p className={`text-3xl font-bold ${darkMode ? "text-blue-400" : "text-blue-600"}`}>
             {dayData.quranPages || 0}
           </p>
         </div>
 
-        <div
-          className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-purple-50"}`}
-        >
-          <p
-            className={`text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-[#5C2E2E]"}`}
-          >
+        <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-purple-50"}`}>
+          <p className={`text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-[#5C2E2E]"}`}>
             Morning Adhkar
           </p>
           <div className="flex items-center gap-2">
             {dayData.morningDhikr ? (
               <>
                 <CheckCircle className="text-green-500" size={20} />
-                <span
-                  className={`text-sm font-medium ${darkMode ? "text-green-400" : "text-green-600"}`}
-                >
+                <span className={`text-sm font-medium ${darkMode ? "text-green-400" : "text-green-600"}`}>
                   Completed
                 </span>
               </>
             ) : (
               <>
                 <X className="text-red-500" size={20} />
-                <span
-                  className={`text-sm font-medium ${darkMode ? "text-red-400" : "text-red-600"}`}
-                >
+                <span className={`text-sm font-medium ${darkMode ? "text-red-400" : "text-red-600"}`}>
                   Missed
                 </span>
               </>
@@ -204,30 +176,22 @@ const DailyJournalView: React.FC<DailyJournalViewProps> = ({
           </div>
         </div>
 
-        <div
-          className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-purple-50"}`}
-        >
-          <p
-            className={`text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-[#5C2E2E]"}`}
-          >
+        <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-purple-50"}`}>
+          <p className={`text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-[#5C2E2E]"}`}>
             Evening Adhkar
           </p>
           <div className="flex items-center gap-2">
             {dayData.eveningDhikr ? (
               <>
                 <CheckCircle className="text-green-500" size={20} />
-                <span
-                  className={`text-sm font-medium ${darkMode ? "text-green-400" : "text-green-600"}`}
-                >
+                <span className={`text-sm font-medium ${darkMode ? "text-green-400" : "text-green-600"}`}>
                   Completed
                 </span>
               </>
             ) : (
               <>
                 <X className="text-red-500" size={20} />
-                <span
-                  className={`text-sm font-medium ${darkMode ? "text-red-400" : "text-red-600"}`}
-                >
+                <span className={`text-sm font-medium ${darkMode ? "text-red-400" : "text-red-600"}`}>
                   Missed
                 </span>
               </>
@@ -239,15 +203,9 @@ const DailyJournalView: React.FC<DailyJournalViewProps> = ({
       {/* Custom Tasks */}
       {customTasks.length > 0 && (
         <div>
-          <h4
-            className={`font-semibold mb-3 flex items-center gap-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
-          >
-            <Sparkles
-              size={18}
-              className={darkMode ? "text-amber-500" : "text-[#8B4545]"}
-            />
-            Custom Tasks ({customTasks.filter((t) => t.completed).length}/
-            {customTasks.length})
+          <h4 className={`font-semibold mb-3 flex items-center gap-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}>
+            <Sparkles size={18} className={darkMode ? "text-amber-500" : "text-[#8B4545]"} />
+            Custom Tasks ({customTasks.filter(t => t.completed).length}/{customTasks.length})
           </h4>
           <div className="space-y-2">
             {customTasks.map((task) => (
@@ -258,15 +216,9 @@ const DailyJournalView: React.FC<DailyJournalViewProps> = ({
                 }`}
               >
                 {task.completed ? (
-                  <CheckCircle
-                    className="text-green-500 flex-shrink-0"
-                    size={18}
-                  />
+                  <CheckCircle className="text-green-500 flex-shrink-0" size={18} />
                 ) : (
-                  <Circle
-                    className={`flex-shrink-0 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
-                    size={18}
-                  />
+                  <Circle className={`flex-shrink-0 ${darkMode ? "text-gray-500" : "text-gray-400"}`} size={18} />
                 )}
                 <span
                   className={`flex-1 ${task.completed ? "line-through opacity-60" : ""} ${
@@ -295,11 +247,13 @@ interface AIInsight {
 interface TenDaySummaryProps {
   darkMode?: boolean;
   username: string;
+  ramadanStartDate: string; // ADDED: Ramadan start date
 }
 
 export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
   darkMode = false,
   username,
+  ramadanStartDate, // NOW REQUIRED
 }) => {
   const [periodData, setPeriodData] = useState<DayData[]>([]);
   const [aiInsight, setAiInsight] = useState<AIInsight | null>(null);
@@ -309,17 +263,17 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
 
   useEffect(() => {
     loadPeriodData();
-  }, [username]);
+  }, [username, ramadanStartDate]); // Added ramadanStartDate dependency
 
   const loadPeriodData = async () => {
     setLoading(true);
     const data: DayData[] = [];
-    const today = new Date();
+    const ramadanStart = new Date(ramadanStartDate);
 
-    // Load last 10 days
-    for (let i = 9; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
+    // Load first 10 days of Ramadan
+    for (let i = 0; i < 10; i++) {
+      const date = new Date(ramadanStart);
+      date.setDate(date.getDate() + i);
       const dateStr = date.toISOString().split("T")[0];
 
       try {
@@ -392,11 +346,8 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
     setGeneratingAI(true);
 
     try {
-      const periodStart =
-        data[0]?.date || new Date().toISOString().split("T")[0];
-      const stored = await storage.get(
-        `ai-feedback:${username}:${periodStart}`,
-      );
+      const periodStart = data[0]?.date || new Date().toISOString().split("T")[0];
+      const stored = await storage.get(`ai-feedback:${username}:${periodStart}`);
 
       if (stored) {
         setAiInsight(JSON.parse(stored.value));
@@ -418,9 +369,7 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
       };
 
       // Find best and worst days
-      const sortedDays = [...data].sort(
-        (a, b) => b.totalProgress - a.totalProgress,
-      );
+      const sortedDays = [...data].sort((a, b) => b.totalProgress - a.totalProgress);
       const bestDay = sortedDays[0].totalProgress > 0 ? sortedDays[0] : null;
       const worstDay = sortedDays[sortedDays.length - 1];
 
@@ -431,31 +380,14 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
         feedback: bestDay
           ? `MashaAllah! You completed ${stats.totalPrayers} out of 50 prayers in the last 10 days (${Math.round((stats.totalPrayers / 50) * 100)}%). ${bestDay.totalProgress > 70 ? "Your dedication is inspiring!" : "Keep building consistency!"}`
           : "Start your spiritual journey today! Every small step counts.",
-        bestDay: bestDay
-          ? { date: bestDay.date, score: bestDay.totalProgress }
-          : null,
-        worstDay:
-          worstDay.totalProgress < 30
-            ? { date: worstDay.date, score: worstDay.totalProgress }
-            : null,
+        bestDay: bestDay ? { date: bestDay.date, score: bestDay.totalProgress } : null,
+        worstDay: worstDay.totalProgress < 30 ? { date: worstDay.date, score: worstDay.totalProgress } : null,
         strengths:
           stats.avgProgress >= 70
-            ? [
-                "Excellent consistency in worship",
-                "Strong spiritual discipline",
-                "Building great habits",
-              ]
+            ? ["Excellent consistency in worship", "Strong spiritual discipline", "Building great habits"]
             : stats.avgProgress >= 50
-              ? [
-                  "Making steady progress",
-                  "Building good habits",
-                  "Staying committed",
-                ]
-              : [
-                  "Taking steps toward growth",
-                  "Starting your journey",
-                  "Every day is a new chance",
-                ],
+              ? ["Making steady progress", "Building good habits", "Staying committed"]
+              : ["Taking steps toward growth", "Starting your journey", "Every day is a new chance"],
         improvements:
           stats.avgProgress < 70
             ? [
@@ -474,16 +406,11 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
           "Set prayer time reminders on your phone",
           "Read at least one page of Quran after each prayer",
           "Complete morning adhkar daily for protection and blessings",
-          stats.totalQuran < 10
-            ? "Try to read 2-3 pages of Quran daily"
-            : "MashaAllah! Keep up the Quran reading",
+          stats.totalQuran < 10 ? "Try to read 2-3 pages of Quran daily" : "MashaAllah! Keep up the Quran reading",
         ],
       };
 
-      await storage.set(
-        `ai-feedback:${username}:${periodStart}`,
-        JSON.stringify(insights),
-      );
+      await storage.set(`ai-feedback:${username}:${periodStart}`, JSON.stringify(insights));
       setAiInsight(insights);
     } catch (err) {
       console.error("AI generation failed:", err);
@@ -494,10 +421,10 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
+    return date.toLocaleDateString("en-US", { 
+      weekday: "long", 
+      month: "long", 
+      day: "numeric" 
     });
   };
 
@@ -587,7 +514,7 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
                   darkMode ? "text-gray-400" : "text-[#8B4545]"
                 } mt-1`}
               >
-                Your spiritual journey over the last 10 days
+                First 10 days of Ramadan
               </p>
             </div>
           </div>
@@ -625,15 +552,11 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
             <div
               key={index}
               className={`rounded-xl border ${
-                darkMode
-                  ? "border-gray-700 bg-gray-900/50"
-                  : "border-gray-200 bg-gray-50"
+                darkMode ? "border-gray-700 bg-gray-900/50" : "border-gray-200 bg-gray-50"
               } overflow-hidden`}
             >
               <button
-                onClick={() =>
-                  setExpandedDay(expandedDay === day.date ? null : day.date)
-                }
+                onClick={() => setExpandedDay(expandedDay === day.date ? null : day.date)}
                 className="w-full p-4 flex items-center justify-between hover:bg-opacity-80 transition-all"
               >
                 <div className="flex items-center gap-4">
@@ -642,12 +565,8 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
                       day.totalProgress >= 70
                         ? "bg-green-500 text-white"
                         : day.totalProgress >= 40
-                          ? darkMode
-                            ? "bg-amber-600 text-white"
-                            : "bg-amber-500 text-white"
-                          : darkMode
-                            ? "bg-gray-700 text-gray-400"
-                            : "bg-gray-300 text-gray-600"
+                          ? darkMode ? "bg-amber-600 text-white" : "bg-amber-500 text-white"
+                          : darkMode ? "bg-gray-700 text-gray-400" : "bg-gray-300 text-gray-600"
                     }`}
                   >
                     {day.totalProgress}%
@@ -670,21 +589,17 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
                   </div>
                 </div>
                 {expandedDay === day.date ? (
-                  <ChevronUp
-                    className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                  />
+                  <ChevronUp className={darkMode ? "text-gray-400" : "text-[#8B4545]"} />
                 ) : (
-                  <ChevronDown
-                    className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                  />
+                  <ChevronDown className={darkMode ? "text-gray-400" : "text-[#8B4545]"} />
                 )}
               </button>
 
               {expandedDay === day.date && (
-                <DailyJournalView
-                  date={day.date}
-                  username={username}
-                  darkMode={darkMode}
+                <DailyJournalView 
+                  date={day.date} 
+                  username={username} 
+                  darkMode={darkMode} 
                 />
               )}
             </div>
@@ -879,9 +794,8 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
                         darkMode ? "text-gray-300" : "text-[#8B4545]"
                       }`}
                     >
-                      🌟 <strong>{formatDate(aiInsight.bestDay.date)}</strong> -
-                      You achieved <strong>{aiInsight.bestDay.score}%</strong>{" "}
-                      completion! MashaAllah!
+                      🌟 <strong>{formatDate(aiInsight.bestDay.date)}</strong> - You achieved{" "}
+                      <strong>{aiInsight.bestDay.score}%</strong> completion! MashaAllah!
                     </p>
                   </div>
                 )}
@@ -906,9 +820,8 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
                         darkMode ? "text-gray-300" : "text-[#8B4545]"
                       }`}
                     >
-                      💪 <strong>{formatDate(aiInsight.worstDay.date)}</strong>{" "}
-                      had <strong>{aiInsight.worstDay.score}%</strong>{" "}
-                      completion. Every day is a fresh start!
+                      💪 <strong>{formatDate(aiInsight.worstDay.date)}</strong> had{" "}
+                      <strong>{aiInsight.worstDay.score}%</strong> completion. Every day is a fresh start!
                     </p>
                   </div>
                 )}
