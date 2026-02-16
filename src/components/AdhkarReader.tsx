@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/AdhkarReader.tsx - Refined & Fully Responsive
+// src/components/AdhkarReader.tsx - With Counter Controls & Responsive Text
+
 import React, { useState, useEffect } from "react";
 import { CheckCircle, RotateCcw, BookOpen, Sun, Moon } from "lucide-react";
 import { morningAdhkar, eveningAdhkar, type DhikrItem } from "../lib/adhkar";
@@ -66,6 +67,19 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
     setProgress((prev) => {
       const currentCount = prev.counters[dhikr.id] || 0;
       const newCount = Math.min(currentCount + 1, dhikr.repetitions);
+      const isComplete = newCount >= dhikr.repetitions;
+
+      return {
+        counters: { ...prev.counters, [dhikr.id]: newCount },
+        completed: { ...prev.completed, [dhikr.id]: isComplete },
+      };
+    });
+  };
+
+  const decrementCounter = (dhikr: DhikrItem) => {
+    setProgress((prev) => {
+      const currentCount = prev.counters[dhikr.id] || 0;
+      const newCount = Math.max(currentCount - 1, 0);
       const isComplete = newCount >= dhikr.repetitions;
 
       return {
@@ -181,8 +195,7 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
           return (
             <div
               key={dhikr.id}
-              onClick={() => !isCompleted && incrementCounter(dhikr)}
-              className={`group relative p-8 md:p-10 rounded-[2.5rem] border-4 transition-all duration-300 cursor-pointer ${isCompleted ? (darkMode ? "bg-gray-900/40 border-gray-800 opacity-60" : "bg-gray-50 border-transparent opacity-70 scale-95") : darkMode ? "bg-gray-800 border-gray-700/50 hover:border-amber-500/50" : "bg-white border-white hover:shadow-2xl hover:-translate-y-1"}`}
+              className={`group relative p-8 md:p-10 rounded-[2.5rem] border-4 transition-all duration-300 ${isCompleted ? (darkMode ? "bg-gray-900/40 border-gray-800 opacity-60" : "bg-gray-50 border-transparent opacity-70 scale-95") : darkMode ? "bg-gray-800 border-gray-700/50 hover:border-amber-500/50" : "bg-white border-white hover:shadow-2xl hover:-translate-y-1"}`}
             >
               <div className="flex justify-between items-start mb-8">
                 <div
@@ -203,19 +216,19 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
 
               <div className="space-y-8 text-center md:text-right">
                 <p
-                  className={`text-2xl md:text-4xl leading-[1.8] font-serif ${darkMode ? "text-amber-100" : "text-[#5C2E2E]"}`}
+                  className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-[1.8] font-serif break-words ${darkMode ? "text-amber-100" : "text-[#5C2E2E]"}`}
                   dir="rtl"
                 >
                   {dhikr.arabic}
                 </p>
                 <div className="text-center md:text-left space-y-4">
                   <p
-                    className={`text-sm md:text-base italic font-serif leading-relaxed ${darkMode ? "text-gray-400" : "text-[#8B4545]/70"}`}
+                    className={`text-xs sm:text-sm md:text-base italic font-serif leading-relaxed break-words ${darkMode ? "text-gray-400" : "text-[#8B4545]/70"}`}
                   >
                     {dhikr.transliteration}
                   </p>
                   <p
-                    className={`text-base md:text-lg font-medium leading-relaxed ${darkMode ? "text-gray-200" : "text-[#5C2E2E]"}`}
+                    className={`text-sm sm:text-base md:text-lg font-medium leading-relaxed break-words ${darkMode ? "text-gray-200" : "text-[#5C2E2E]"}`}
                   >
                     {dhikr.translation}
                   </p>
@@ -224,13 +237,64 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
 
               <div className="mt-10 pt-8 border-t border-gray-100 dark:border-gray-700/50 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <div
-                    className={`h-14 w-14 rounded-full flex items-center justify-center font-black text-xl transition-all ${isCompleted ? "bg-green-500 text-white" : darkMode ? "bg-gray-700 text-amber-500" : "bg-amber-50 text-[#8B4545]"}`}
-                  >
-                    {isCompleted ? <CheckCircle size={28} /> : count}
+                  {/* Counter Controls */}
+                  <div className="flex items-center gap-3">
+                    {/* Decrement Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        decrementCounter(dhikr);
+                      }}
+                      disabled={count === 0}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${
+                        count === 0
+                          ? "opacity-30 cursor-not-allowed"
+                          : darkMode
+                            ? "bg-gray-700 text-gray-100 hover:bg-gray-600 active:scale-95"
+                            : "bg-gray-200 text-[#5C2E2E] hover:bg-gray-300 active:scale-95"
+                      }`}
+                    >
+                      −
+                    </button>
+
+                    {/* Count Display */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isCompleted) incrementCounter(dhikr);
+                      }}
+                      className={`h-16 w-16 rounded-full flex items-center justify-center font-black text-2xl transition-all cursor-pointer ${
+                        isCompleted
+                          ? "bg-green-500 text-white"
+                          : darkMode
+                            ? "bg-gray-700 text-amber-500 hover:bg-gray-600 active:scale-95"
+                            : "bg-amber-50 text-[#8B4545] hover:bg-amber-100 active:scale-95"
+                      }`}
+                    >
+                      {isCompleted ? <CheckCircle size={32} /> : count}
+                    </div>
+
+                    {/* Increment Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        incrementCounter(dhikr);
+                      }}
+                      disabled={isCompleted}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all ${
+                        isCompleted
+                          ? "opacity-30 cursor-not-allowed"
+                          : darkMode
+                            ? "bg-amber-600 text-white hover:bg-amber-700 active:scale-95"
+                            : "bg-[#8B4545] text-white hover:bg-[#6B3535] active:scale-95"
+                      }`}
+                    >
+                      +
+                    </button>
                   </div>
+
                   <div className="text-sm font-bold uppercase tracking-widest opacity-40">
-                    of {dhikr.repetitions} Repetitions
+                    of {dhikr.repetitions}
                   </div>
                 </div>
                 <div
