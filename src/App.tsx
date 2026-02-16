@@ -119,7 +119,7 @@ const App: React.FC = () => {
     <div className={`min-h-screen ${bgColor} transition-colors duration-300`}>
       {/* Header */}
       <header className={`${cardBg} ${borderColor} border-b shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-opacity-95`}>
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex flex-col min-w-0">
               <h1
