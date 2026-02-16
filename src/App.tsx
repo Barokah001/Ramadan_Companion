@@ -118,32 +118,26 @@ const App: React.FC = () => {
   return (
     <div className={`min-h-screen ${bgColor} transition-colors duration-300`}>
       {/* Header */}
-      <header
-        className={`${cardBg} ${borderColor} border-b shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-opacity-95`}
-      >
+      <header className={`${cardBg} ${borderColor} border-b shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-opacity-95`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex flex-col min-w-0">
+            <div className="flex-1 min-w-0">
               <h1
-                className={`text-2xl md:text-4xl font-bold ${textPrimary} truncate`}
+                className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold ${textPrimary}`}
                 style={{ fontFamily: "Playfair Display, serif" }}
               >
                 Ramadan Companion
               </h1>
-              <p
-                className={`text-xs sm:text-sm ${textSecondary} truncate mt-0.5`}
-              >
-                <span className="hidden sm:inline">
-                  Your spiritual journey •{" "}
-                </span>
-                <span className="font-medium">Assalam 'alaykum {username}</span>
+              <p className={`text-xs sm:text-sm ${textSecondary} mt-0.5`}>
+                <span className="hidden sm:inline">Your spiritual journey • </span>
+                <span className="font-medium">{username}</span>
               </p>
             </div>
-
-            <div className="flex items-center justify-center gap-2 sm:gap-3 ml-4">
+            
+            <div className="flex items-center gap-2 sm:gap-3 ml-4">
               <button
                 onClick={toggleDarkMode}
-                className={`p-2 sm:p-3 rounded-full ${cardBg} ${borderColor} border shadow-md hover:shadow-lg transition-all`}
+                className={`p-2 sm:p-3 rounded-full ${cardBg} ${borderColor} border shadow-md hover:shadow-lg transition-all flex items-center justify-center`}
                 aria-label="Toggle dark mode"
               >
                 {darkMode ? (
@@ -178,9 +172,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Navigation */}
-      <nav
-        className={`${cardBg} ${borderColor} border-b shadow-md sticky top-[61px] sm:top-[73px] z-40 ${mobileMenuOpen ? "block" : "hidden md:block"}`}
-      >
+      <nav className={`${cardBg} ${borderColor} border-b shadow-md sticky top-[61px] sm:top-[73px] z-40 ${mobileMenuOpen ? "block" : "hidden md:block"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="hidden md:flex gap-2 overflow-x-auto py-3 hide-scrollbar">
             {navItems.map(({ id, label, icon: Icon }) => (
@@ -231,9 +223,7 @@ const App: React.FC = () => {
                 >
                   Daily Wisdom
                 </h2>
-                <p
-                  className={`text-base sm:text-lg ${textSecondary} max-w-2xl mx-auto`}
-                >
+                <p className={`text-base sm:text-lg ${textSecondary} max-w-2xl mx-auto`}>
                   Discover inspiration from the Quran and Hadith
                 </p>
               </div>
@@ -274,9 +264,7 @@ const App: React.FC = () => {
                 </button>
               </div>
 
-              <p
-                className={`text-center text-sm sm:text-base ${textSecondary} font-medium`}
-              >
+              <p className={`text-center text-sm sm:text-base ${textSecondary} font-medium`}>
                 Quote {currentQuoteIndex + 1} of {quotes.length}
               </p>
             </section>
@@ -287,9 +275,7 @@ const App: React.FC = () => {
         )}
 
         {/* TASKS VIEW - NOW PASSES USERNAME */}
-        {currentView === "tasks" && (
-          <DailyTasks darkMode={darkMode} username={username} />
-        )}
+        {currentView === "tasks" && <DailyTasks darkMode={darkMode} username={username} />}
 
         {/* ADHKAR VIEW */}
         {currentView === "dhikr" && <AdhkarReader darkMode={darkMode} />}
@@ -340,32 +326,28 @@ const App: React.FC = () => {
 
         {/* 10-DAY SUMMARY VIEW */}
         {currentView === "summary" && (
-          <TenDaySummary
-            darkMode={darkMode}
+          <TenDaySummary 
+            darkMode={darkMode} 
             username={username}
-            ramadanStartDate="2026-02-18"
+            ramadanStartDate="2026-02-18" // Ramadan 2026 start date
           />
         )}
 
         {/* RAMADAN SUMMARY VIEW */}
         {currentView === "ramadan" && (
           <RamadanSummary
-            darkMode={darkMode}
+            darkMode={darkMode} 
             username={username}
-            ramadanStartDate="2025-02-18"
+            ramadanStartDate="2026-02-18" 
             ramadanDays={30} // 29 or 30 days
           />
         )}
       </main>
 
       {/* Footer */}
-      <footer
-        className={`${cardBg} ${borderColor} border-t mt-16 sm:mt-20 shadow-lg`}
-      >
+      <footer className={`${cardBg} ${borderColor} border-t mt-16 sm:mt-20 shadow-lg`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 text-center">
-          <p
-            className={`text-base sm:text-lg ${textSecondary} mb-2 font-medium`}
-          >
+          <p className={`text-base sm:text-lg ${textSecondary} mb-2 font-medium`}>
             May this Ramadan bring peace, blessings, and spiritual growth
           </p>
           <p className={`text-lg sm:text-xl ${textPrimary} font-semibold`}>
