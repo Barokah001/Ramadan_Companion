@@ -123,7 +123,7 @@ const App: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex flex-col min-w-0">
               <h1
-                className={`text-xl md:text-3xl lg:text-4xl font-bold ${textPrimary} truncate`}
+                className={`text-xl md:text-3xl font-semibold md:font-bold ${textPrimary} truncate`}
                 style={{ fontFamily: "Playfair Display, serif" }}
               >
                 Ramadan Companion
