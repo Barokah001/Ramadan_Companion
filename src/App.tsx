@@ -19,15 +19,16 @@ import { ImageGallery } from "./components/ImageGallery";
 import { FavoritesList } from "./components/FavoritesList";
 import { DailyTasks } from "./components/DailyTasks";
 import { AdhkarReader } from "./components/AdhkarReader";
-import { WeeklySummary } from "./components/WeeklySummary";
+import { TenDaySummary } from "./components/TenDaySummary";
 import { UsernameModal } from "./components/UsernameModal";
 import { useUsername } from "./contexts/UsernameContext";
 import { quotes } from "./lib/quotes";
+import { RamadanSummary } from "./components/RamadanSummary";
 
-type View = "home" | "tasks" | "dhikr" | "quotes" | "weekly";
+type View = "home" | "tasks" | "dhikr" | "quotes" | "summary" | "ramadan";
 
 const App: React.FC = () => {
-  const { username, setUsername, isLoading } = useUsername();
+  const { username, setUsername, logout, isLoading } = useUsername();
   const [currentView, setCurrentView] = useState<View>("home");
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [darkMode, setDarkMode] = useState(false);
@@ -110,7 +111,8 @@ const App: React.FC = () => {
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "dhikr", label: "Adhkar", icon: Book },
     { id: "quotes", label: "Quotes", icon: Sparkles },
-    { id: "weekly", label: "Summary", icon: BarChart3 },
+    { id: "summary", label: "Summary", icon: BarChart3 },
+    { id: "ramadan", label: "Ramadan", icon: Moon },
   ];
 
   return (
@@ -119,9 +121,9 @@ const App: React.FC = () => {
       <header className={`${cardBg} ${borderColor} border-b shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-opacity-95`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex flex-col">
+            <div className="flex-1 min-w-0">
               <h1
-                className={`text-xl md:text-3xl font-semibold md:font-bold ${textPrimary} truncate`}
+                className={`text-2xl lg:text-4xl font-bold ${textPrimary} truncate`}
                 style={{ fontFamily: "Playfair Display, serif" }}
               >
                 Ramadan Companion
@@ -143,6 +145,14 @@ const App: React.FC = () => {
                 ) : (
                   <Moon className="text-[#8B4545]" size={20} />
                 )}
+              </button>
+
+              <button
+                onClick={logout}
+                className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-full ${darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-[#8B4545]"} transition-all text-sm font-medium`}
+                aria-label="Logout"
+              >
+                <span>Logout</span>
               </button>
 
               <button
@@ -314,9 +324,19 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* WEEKLY SUMMARY VIEW - NOW PASSES USERNAME */}
-        {currentView === "weekly" && (
-          <WeeklySummary darkMode={darkMode} username={username} />
+        {/* 10-DAY SUMMARY VIEW */}
+        {currentView === "summary" && (
+          <TenDaySummary darkMode={darkMode} username={username} />
+        )}
+
+        {/* RAMADAN SUMMARY VIEW */}
+        {currentView === "ramadan" && (
+          <RamadanSummary 
+            darkMode={darkMode} 
+            username={username}
+            ramadanStartDate="2025-03-01" // Ramadan 2025 start date (update as needed)
+            ramadanDays={30} // 29 or 30 days
+          />
         )}
       </main>
 

@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-// src/contexts/UsernameContext.tsx - Fixed with localStorage for device-specific storage
+// src/contexts/UsernameContext.tsx - FIXED with localStorage + logout
 
 import React, {
   createContext,
@@ -15,6 +15,7 @@ interface UsernameContextType {
   setUsername: (
     username: string,
   ) => Promise<{ success: boolean; message: string }>;
+  logout: () => void;
   isLoading: boolean;
 }
 
@@ -28,14 +29,14 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
   const [username, setUsernameState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load username on mount - NOW USES LOCALSTORAGE
+  // Load username from localStorage on mount
   useEffect(() => {
     const loadUsername = async () => {
       try {
-        // Use browser's localStorage for device-specific storage
-        const stored = localStorage.getItem("ramadan-username");
-        if (stored) {
-          setUsernameState(stored);
+        // Check localStorage first (device-specific)
+        const localUsername = localStorage.getItem("ramadan-username");
+        if (localUsername) {
+          setUsernameState(localUsername);
         }
       } catch (error) {
         console.error("Failed to load username:", error);
@@ -79,7 +80,7 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     try {
-      // Check if username is already taken in Supabase
+      // Check if username is already taken
       const existingUsers = await storage.list("user:");
 
       if (existingUsers && existingUsers.keys) {
@@ -95,10 +96,10 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
         }
       }
 
-      // Save username locally in browser's localStorage (device-specific)
+      // Save username to localStorage (device-specific)
       localStorage.setItem("ramadan-username", trimmedUsername);
 
-      // Register username globally in Supabase (for checking uniqueness)
+      // Register username in Supabase (for global registry and data storage)
       await storage.set(
         `user:${trimmedUsername}`,
         JSON.stringify({
@@ -118,8 +119,15 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem("ramadan-username");
+    setUsernameState(null);
+  };
+
   return (
-    <UsernameContext.Provider value={{ username, setUsername, isLoading }}>
+    <UsernameContext.Provider
+      value={{ username, setUsername, logout, isLoading }}
+    >
       {children}
     </UsernameContext.Provider>
   );
