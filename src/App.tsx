@@ -121,16 +121,16 @@ const App: React.FC = () => {
       <header className={`${cardBg} ${borderColor} border-b shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-opacity-95`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
+            <div className="flex flex-col min-w-0">
               <h1
-                className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold ${textPrimary}`}
+                className={`text-xl md:text-3xl lg:text-4xl font-bold ${textPrimary}`}
                 style={{ fontFamily: "Playfair Display, serif" }}
               >
                 Ramadan Companion
               </h1>
               <p className={`text-xs sm:text-sm ${textSecondary} mt-0.5`}>
                 <span className="hidden sm:inline">Your spiritual journey • </span>
-                <span className="font-medium">{username}</span>
+                <span className="font-medium"> Assalam 'alaykum {username}</span>
               </p>
             </div>
             
