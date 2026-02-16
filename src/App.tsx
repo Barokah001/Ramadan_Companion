@@ -123,7 +123,7 @@ const App: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex flex-col items-center justify-center min-w-0">
+            <div className="flex flex-col min-w-0">
               <h1
                 className={`text-2xl md:text-4xl font-bold ${textPrimary} truncate`}
                 style={{ fontFamily: "Playfair Display, serif" }}
@@ -140,7 +140,7 @@ const App: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3 ml-4">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 ml-4">
               <button
                 onClick={toggleDarkMode}
                 className={`p-2 sm:p-3 rounded-full ${cardBg} ${borderColor} border shadow-md hover:shadow-lg transition-all`}
