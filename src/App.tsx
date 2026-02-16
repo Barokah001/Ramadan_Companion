@@ -25,7 +25,7 @@ import { useUsername } from "./contexts/UsernameContext";
 import { quotes } from "./lib/quotes";
 import { RamadanSummary } from "./components/RamadanSummary";
 
-type View = "home" | "tasks" | "dhikr" | "quotes" | "summary" | "ramadan";
+type View = "home" | "tasks" | "dhikr" | "quotes" | "weekly";
 
 const App: React.FC = () => {
   const { username, setUsername, logout, isLoading } = useUsername();
@@ -119,22 +119,22 @@ const App: React.FC = () => {
     <div className={`min-h-screen ${bgColor} transition-colors duration-300`}>
       {/* Header */}
       <header className={`${cardBg} ${borderColor} border-b shadow-lg sticky top-0 z-50 backdrop-blur-sm bg-opacity-95`}>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col min-w-0">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
               <h1
-                className={`text-xl md:text-3xl font-semibold md:font-bold ${textPrimary} truncate`}
+                className={`text-base sm:text-xl md:text-2xl lg:text-3xl font-bold ${textPrimary} whitespace-nowrap overflow-hidden text-ellipsis`}
                 style={{ fontFamily: "Playfair Display, serif" }}
               >
                 Ramadan Companion
               </h1>
-              <p className={`text-xs sm:text-sm ${textSecondary} mt-0.5`}>
+              <p className={`text-xs sm:text-sm ${textSecondary} mt-0.5 truncate`}>
                 <span className="hidden sm:inline">Your spiritual journey • </span>
-                <span className="font-medium"> Assalam 'alaykum {username}</span>
+                <span className="font-medium">Assalam 'alaykum {username}</span>
               </p>
             </div>
             
-            <div className="flex items-center gap-2 sm:gap-3 ml-4">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={toggleDarkMode}
                 className={`p-2 sm:p-3 rounded-full ${cardBg} ${borderColor} border shadow-md hover:shadow-lg transition-all flex items-center justify-center`}
@@ -149,7 +149,7 @@ const App: React.FC = () => {
 
               <button
                 onClick={logout}
-                className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-full ${darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-[#8B4545]"} transition-all text-sm font-medium`}
+                className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-full ${darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-[#8B4545]"} transition-all text-sm font-medium`}
                 aria-label="Logout"
               >
                 <span>Logout</span>
@@ -329,13 +329,13 @@ const App: React.FC = () => {
           <TenDaySummary 
             darkMode={darkMode} 
             username={username}
-            ramadanStartDate="2026-02-18" // Ramadan 2026 start date
+            ramadanStartDate="2026-02-18" 
           />
         )}
 
         {/* RAMADAN SUMMARY VIEW */}
         {currentView === "ramadan" && (
-          <RamadanSummary
+          <RamadanSummary 
             darkMode={darkMode} 
             username={username}
             ramadanStartDate="2026-02-18" 
