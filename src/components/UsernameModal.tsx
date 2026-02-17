@@ -39,8 +39,6 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
         className={`flex flex-col gap-3 items-center justify-center w-full px-8 py-8 ${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-2xl`}
         style={{ maxWidth: "440px" }}
       >
-        {/* Logo */}
-        <div className="text-4xl mb-1">🌙</div>
 
         {/* Title */}
         <h2

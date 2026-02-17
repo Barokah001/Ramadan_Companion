@@ -3,14 +3,10 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Calendar,
-  Award,
   Heart,
   BookOpen,
   CheckCircle,
-  Sparkles,
   Loader,
-  TrendingUp,
   Star,
   Moon,
 } from "lucide-react";
@@ -406,10 +402,6 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
       <div
         className={`${darkMode ? "bg-gradient-to-br from-amber-900/20 to-amber-800/20 border-amber-700" : "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200"} rounded-2xl p-8 shadow-xl border-2 text-center`}
       >
-        <Moon
-          className={`mx-auto mb-4 ${darkMode ? "text-amber-400" : "text-amber-600"}`}
-          size={48}
-        />
         <h3
           className={`text-2xl font-bold mb-4 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
           style={{ fontFamily: "Playfair Display, serif" }}

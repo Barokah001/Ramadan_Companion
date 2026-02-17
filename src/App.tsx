@@ -371,7 +371,7 @@ const App: React.FC = () => {
           <TenDaySummary
             darkMode={darkMode}
             username={username}
-            ramadanStartDate="2026-02-18"
+            ramadanStartDate="2026-02-14"
           />
         )}
 
@@ -380,7 +380,7 @@ const App: React.FC = () => {
           <RamadanSummary
             darkMode={darkMode}
             username={username}
-            ramadanStartDate="2026-02-18"
+            ramadanStartDate="2026-02-14"
             ramadanDays={30}
           />
         )}
@@ -388,7 +388,7 @@ const App: React.FC = () => {
 
       {/* Footer */}
       <footer
-        className={`${cardBg} ${borderColor} border-t mt-16 sm:mt-20 shadow-lg`}
+        className={`${cardBg} ${borderColor} border-t mt-10 sm:mt-12 shadow-lg`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 text-center">
           <p

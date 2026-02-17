@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  TrendingUp,
   Calendar,
   Award,
   Heart,
@@ -16,7 +15,6 @@ import {
   Circle,
   X,
   Lock,
-  Moon,
 } from "lucide-react";
 import { storage } from "../lib/supabase";
 
@@ -272,10 +270,6 @@ const ComingSoonCard: React.FC<{
           className={darkMode ? "text-amber-400" : "text-[#8B4545]"}
         />
       </div>
-      <Moon
-        size={28}
-        className={darkMode ? "text-amber-400" : "text-[#8B4545]"}
-      />
       <h3
         className={`text-2xl font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
         style={{ fontFamily: "Playfair Display, serif" }}
@@ -302,8 +296,8 @@ const ComingSoonCard: React.FC<{
 interface TenDaySummaryProps {
   darkMode?: boolean;
   username: string;
-  ramadanStartDate: string; // "YYYY-MM-DD"
-  ramadanDays?: number; // 29 or 30 (default 30)
+  ramadanStartDate: string; 
+  ramadanDays?: number; 
 }
 
 // ── Period definition ──
