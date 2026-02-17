@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/DailyTasks.tsx - FIXED with username scoping
+// src/components/DailyTasks.tsx - FIXED: Progress % based on required tasks only
 
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, Calendar } from "lucide-react";
@@ -19,12 +19,37 @@ interface Prayer {
 
 interface DailyTasksProps {
   darkMode?: boolean;
-  username: string; // ADDED USERNAME PROP
+  username: string;
 }
 
 const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
-export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, username }) => {
+// ── Progress calculation (required tasks only, no custom tasks) ────────────
+//  Prayers        5 × 7 pts  = 35 pts  (35%)
+//  Morning Adhkar 1 × 15 pts = 15 pts  (15%)
+//  Evening Adhkar 1 × 15 pts = 15 pts  (15%)
+//  Quran reading  capped 20  = 20 pts  (20%)  goal: 4 pages = full
+//  ─────────────────────────────────────────
+//  Total tracked                85 pts → scaled to 100%
+// ──────────────────────────────────────────────────────────────────────────
+function calcProgress(p: {
+  completedPrayers: number;
+  morningDhikr: boolean;
+  eveningDhikr: boolean;
+  quranPages: number;
+}): number {
+  const prayers = (p.completedPrayers / 5) * 35;
+  const morning = p.morningDhikr ? 15 : 0;
+  const evening = p.eveningDhikr ? 15 : 0;
+  const quran = Math.min((p.quranPages / 4) * 20, 20);
+  const raw = prayers + morning + evening + quran; // max 85
+  return Math.min(Math.round((raw / 85) * 100), 100);
+}
+
+export const DailyTasks: React.FC<DailyTasksProps> = ({
+  darkMode = false,
+  username,
+}) => {
   const [prayers, setPrayers] = useState<Prayer[]>(() =>
     PRAYERS.map((name) => ({ name, completed: false })),
   );
@@ -38,28 +63,28 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
     const loadData = async () => {
       try {
         const today = new Date().toISOString().split("T")[0];
-        // FIXED: Now scoped by username
         const stored = await storage.get(`daily-tasks:${username}:${today}`);
         if (stored) {
           const data = JSON.parse(stored.value);
-          setPrayers(data.prayers || prayers);
+          setPrayers(
+            data.prayers || PRAYERS.map((name) => ({ name, completed: false })),
+          );
           setQuranPages(data.quranPages || 0);
           setCustomTasks(data.customTasks || []);
           setMorningDhikr(data.morningDhikr || false);
           setEveningDhikr(data.eveningDhikr || false);
         }
       } catch {
-        // No stored tasks
+        /* no stored tasks */
       }
     };
     loadData();
-  }, [username]); // Added username dependency
+  }, [username]);
 
   useEffect(() => {
     const saveData = async () => {
       try {
         const today = new Date().toISOString().split("T")[0];
-        // FIXED: Now scoped by username
         await storage.set(
           `daily-tasks:${username}:${today}`,
           JSON.stringify({
@@ -71,62 +96,55 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
           }),
         );
       } catch {
-        // Failed to save
+        /* failed to save */
       }
     };
     saveData();
-  }, [prayers, quranPages, customTasks, morningDhikr, eveningDhikr, username]); // Added username dependency
+  }, [prayers, quranPages, customTasks, morningDhikr, eveningDhikr, username]);
 
-  const togglePrayer = (index: number) => {
+  const togglePrayer = (index: number) =>
     setPrayers((prev) =>
-      prev.map((prayer, i) =>
-        i === index ? { ...prayer, completed: !prayer.completed } : prayer,
-      ),
+      prev.map((p, i) => (i === index ? { ...p, completed: !p.completed } : p)),
     );
-  };
 
   const addCustomTask = () => {
     if (newTaskText.trim()) {
-      const newTask: CustomTask = {
-        id: Date.now().toString(),
-        text: newTaskText.trim(),
-        completed: false,
-        createdAt: new Date().toISOString(),
-      };
-      setCustomTasks((prev) => [...prev, newTask]);
+      setCustomTasks((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          text: newTaskText.trim(),
+          completed: false,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
       setNewTaskText("");
     }
   };
 
-  const toggleCustomTask = (id: string) => {
+  const toggleCustomTask = (id: string) =>
     setCustomTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task,
-      ),
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
     );
-  };
 
-  const deleteCustomTask = (id: string) => {
-    setCustomTasks((prev) => prev.filter((task) => task.id !== id));
-  };
+  const deleteCustomTask = (id: string) =>
+    setCustomTasks((prev) => prev.filter((t) => t.id !== id));
 
   const completedPrayers = prayers.filter((p) => p.completed).length;
   const completedTasks = customTasks.filter((t) => t.completed).length;
-  const totalProgress = Math.round(
-    (completedPrayers / 5) * 35 +
-      (morningDhikr ? 15 : 0) +
-      (eveningDhikr ? 15 : 0) +
-      Math.min((quranPages / 4) * 20, 20) +
-      (customTasks.length > 0 ? (completedTasks / customTasks.length) * 15 : 0),
-  );
+
+  const totalProgress = calcProgress({
+    completedPrayers,
+    morningDhikr,
+    eveningDhikr,
+    quranPages,
+  });
 
   return (
     <div className="flex flex-col gap-2 space-y-6">
       {/* Progress Overview */}
       <div
-        className={`p-8 ${
-          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        } rounded-xl p-5 shadow-lg border`}
+        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} rounded-xl p-5 shadow-lg border`}
       >
         <div className="flex items-center gap-3 mb-4">
           <Calendar
@@ -162,25 +180,24 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
             </span>
           </div>
           <div
-            className={`h-3 rounded-full overflow-hidden ${
-              darkMode ? "bg-gray-700" : "bg-[#EAD7C0]"
-            }`}
+            className={`h-3 rounded-full overflow-hidden ${darkMode ? "bg-gray-700" : "bg-[#EAD7C0]"}`}
           >
             <div
-              className={`h-full rounded-full transition-all ${
-                darkMode ? "bg-amber-600" : "bg-[#8B4545]"
-              }`}
+              className={`h-full rounded-full transition-all ${darkMode ? "bg-amber-600" : "bg-[#8B4545]"}`}
               style={{ width: `${totalProgress}%` }}
             />
           </div>
+          <p
+            className={`text-xs mt-2 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
+          >
+            Based on prayers, Quran & Adhkar
+          </p>
         </div>
       </div>
 
       {/* Prayers */}
       <div
-        className={`${
-          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        } rounded-xl p-5 shadow-lg border`}
+        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} rounded-xl p-5 shadow-lg border`}
       >
         <div className="flex items-center justify-between mb-4">
           <h3
@@ -190,24 +207,17 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
             Daily Prayers
           </h3>
           <span
-            className={`text-sm flex items-center justify-center w-8 h-8 font-semibold px-2.5 py-1 rounded-full ${
-              darkMode
-                ? "bg-gray-700 text-amber-500"
-                : "bg-[#EAD7C0] text-[#8B4545]"
-            }`}
+            className={`text-sm flex items-center justify-center w-8 h-8 font-semibold rounded-full ${darkMode ? "bg-gray-700 text-amber-500" : "bg-[#EAD7C0] text-[#8B4545]"}`}
           >
             {completedPrayers}/5
           </span>
         </div>
-
         <div className="space-y-2">
           {prayers.map((prayer, index) => (
             <button
               key={prayer.name}
               onClick={() => togglePrayer(index)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg ${
-                darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"
-              } ${prayer.completed ? "opacity-60" : ""}`}
+              className={`w-full flex items-center gap-3 p-3 rounded-lg ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"} ${prayer.completed ? "opacity-60" : ""}`}
             >
               {prayer.completed ? (
                 <CheckCircle2 className="text-green-500" size={20} />
@@ -218,9 +228,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
                 />
               )}
               <span
-                className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${
-                  prayer.completed ? "line-through" : ""
-                }`}
+                className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${prayer.completed ? "line-through" : ""}`}
               >
                 {prayer.name}
               </span>
@@ -231,29 +239,26 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
 
       {/* Quran Reading */}
       <div
-        className={`${
-          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        } rounded-xl p-5 shadow-lg border`}
+        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} rounded-xl p-5 shadow-lg border`}
       >
         <h3
-          className={`text-lg font-bold mb-4 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
+          className={`text-lg font-bold mb-1 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
           style={{ fontFamily: "Playfair Display, serif" }}
         >
           Quran Reading
         </h3>
-
+        <p
+          className={`text-xs mb-4 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
+        >
+          Goal: 4 pages for full score (20 pts)
+        </p>
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={() => setQuranPages(Math.max(0, quranPages - 1))}
-            className={`w-10 h-10 rounded-lg font-bold text-lg ${
-              darkMode
-                ? "bg-gray-700 text-gray-100 hover:bg-gray-600"
-                : "bg-[#EAD7C0] text-[#5C2E2E] hover:bg-[#d4c4a8]"
-            }`}
+            className={`w-10 h-10 rounded-lg font-bold text-lg ${darkMode ? "bg-gray-700 text-gray-100 hover:bg-gray-600" : "bg-[#EAD7C0] text-[#5C2E2E] hover:bg-[#d4c4a8]"}`}
           >
             −
           </button>
-
           <div className="flex-1 max-w-xs text-center">
             <div
               className={`text-4xl font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
@@ -266,14 +271,9 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
               Pages Today
             </div>
           </div>
-
           <button
             onClick={() => setQuranPages(quranPages + 1)}
-            className={`w-10 h-10 rounded-lg font-bold text-lg ${
-              darkMode
-                ? "bg-gray-700 text-gray-100 hover:bg-gray-600"
-                : "bg-[#EAD7C0] text-[#5C2E2E] hover:bg-[#d4c4a8]"
-            }`}
+            className={`w-10 h-10 rounded-lg font-bold text-lg ${darkMode ? "bg-gray-700 text-gray-100 hover:bg-gray-600" : "bg-[#EAD7C0] text-[#5C2E2E] hover:bg-[#d4c4a8]"}`}
           >
             +
           </button>
@@ -282,9 +282,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
 
       {/* Adhkar */}
       <div
-        className={`${
-          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        } rounded-xl p-5 shadow-lg border`}
+        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} rounded-xl p-5 shadow-lg border`}
       >
         <div className="flex items-center justify-between mb-4">
           <h3
@@ -294,72 +292,52 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
             Daily Adhkar
           </h3>
           <span
-            className={`text-sm font-semibold px-2.5 py-1 rounded-full ${
-              darkMode
-                ? "bg-gray-700 text-amber-500"
-                : "bg-[#EAD7C0] text-[#8B4545]"
-            }`}
+            className={`text-sm font-semibold px-2.5 py-1 rounded-full ${darkMode ? "bg-gray-700 text-amber-500" : "bg-[#EAD7C0] text-[#8B4545]"}`}
           >
             {(morningDhikr ? 1 : 0) + (eveningDhikr ? 1 : 0)}/2
           </span>
         </div>
-
         <div className="space-y-2">
-          <button
-            onClick={() => setMorningDhikr(!morningDhikr)}
-            className={`w-full flex items-center gap-3 p-3 rounded-lg ${
-              darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"
-            } ${morningDhikr ? "opacity-60" : ""}`}
-          >
-            {morningDhikr ? (
-              <CheckCircle2 className="text-green-500" size={20} />
-            ) : (
-              <Circle
-                className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                size={20}
-              />
-            )}
-            <span
-              className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${
-                morningDhikr ? "line-through" : ""
-              }`}
+          {[
+            {
+              label: "Morning Adhkar",
+              value: morningDhikr,
+              set: setMorningDhikr,
+            },
+            {
+              label: "Evening Adhkar",
+              value: eveningDhikr,
+              set: setEveningDhikr,
+            },
+          ].map(({ label, value, set }) => (
+            <button
+              key={label}
+              onClick={() => set(!value)}
+              className={`w-full flex items-center gap-3 p-3 rounded-lg ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"} ${value ? "opacity-60" : ""}`}
             >
-              Morning Adhkar
-            </span>
-          </button>
-
-          <button
-            onClick={() => setEveningDhikr(!eveningDhikr)}
-            className={`w-full flex items-center gap-3 p-3 rounded-lg ${
-              darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"
-            } ${eveningDhikr ? "opacity-60" : ""}`}
-          >
-            {eveningDhikr ? (
-              <CheckCircle2 className="text-green-500" size={20} />
-            ) : (
-              <Circle
-                className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                size={20}
-              />
-            )}
-            <span
-              className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${
-                eveningDhikr ? "line-through" : ""
-              }`}
-            >
-              Evening Adhkar
-            </span>
-          </button>
+              {value ? (
+                <CheckCircle2 className="text-green-500" size={20} />
+              ) : (
+                <Circle
+                  className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
+                  size={20}
+                />
+              )}
+              <span
+                className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${value ? "line-through" : ""}`}
+              >
+                {label}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Custom Tasks */}
+      {/* Custom Tasks — NOT counted in progress % */}
       <div
-        className={`${
-          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        } rounded-xl p-5 shadow-lg border`}
+        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} rounded-xl p-5 shadow-lg border`}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-1">
           <h3
             className={`text-lg font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
             style={{ fontFamily: "Playfair Display, serif" }}
@@ -368,17 +346,17 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
           </h3>
           {customTasks.length > 0 && (
             <span
-              className={`text-sm font-semibold px-2.5 py-1 rounded-full ${
-                darkMode
-                  ? "bg-gray-700 text-amber-500"
-                  : "bg-[#EAD7C0] text-[#8B4545]"
-              }`}
+              className={`text-sm font-semibold px-2.5 py-1 rounded-full ${darkMode ? "bg-gray-700 text-amber-500" : "bg-[#EAD7C0] text-[#8B4545]"}`}
             >
               {completedTasks}/{customTasks.length}
             </span>
           )}
         </div>
-
+        <p
+          className={`text-xs mb-4 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
+        >
+          Personal extras — not included in your daily progress %
+        </p>
         <div className="flex gap-2 mb-4">
           <input
             type="text"
@@ -386,25 +364,16 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
             onChange={(e) => setNewTaskText(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addCustomTask()}
             placeholder="Add a new task..."
-            className={`flex-1 px-3 py-2 rounded-lg text-sm ${
-              darkMode
-                ? "bg-gray-700 text-gray-100 border-gray-600"
-                : "bg-gray-50 text-[#5C2E2E] border-gray-200"
-            } border focus:outline-none focus:ring-2 focus:ring-[#8B4545]`}
+            className={`flex-1 px-3 py-2 rounded-lg text-sm ${darkMode ? "bg-gray-700 text-gray-100 border-gray-600" : "bg-gray-50 text-[#5C2E2E] border-gray-200"} border focus:outline-none focus:ring-2 focus:ring-[#8B4545]`}
           />
           <button
             onClick={addCustomTask}
             disabled={!newTaskText.trim()}
-            className={`px-4 py-2 rounded-lg ${
-              darkMode
-                ? "bg-amber-600 hover:bg-amber-700"
-                : "bg-[#8B4545] hover:bg-[#6B3535]"
-            } text-white text-sm font-medium disabled:opacity-50`}
+            className={`px-4 py-2 rounded-lg ${darkMode ? "bg-amber-600 hover:bg-amber-700" : "bg-[#8B4545] hover:bg-[#6B3535]"} text-white text-sm font-medium disabled:opacity-50`}
           >
             <Plus size={18} />
           </button>
         </div>
-
         <div className="space-y-2">
           {customTasks.length === 0 ? (
             <p
@@ -416,9 +385,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
             customTasks.map((task) => (
               <div
                 key={task.id}
-                className={`flex items-center gap-2 p-2.5 rounded-lg ${
-                  darkMode ? "bg-gray-700" : "bg-gray-50"
-                } ${task.completed ? "opacity-60" : ""}`}
+                className={`flex items-center gap-2 p-2.5 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"} ${task.completed ? "opacity-60" : ""}`}
               >
                 <button
                   onClick={() => toggleCustomTask(task.id)}
@@ -434,9 +401,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({ darkMode = false, userna
                   )}
                 </button>
                 <span
-                  className={`flex-1 text-sm ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${
-                    task.completed ? "line-through" : ""
-                  }`}
+                  className={`flex-1 text-sm ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${task.completed ? "line-through" : ""}`}
                 >
                   {task.text}
                 </span>

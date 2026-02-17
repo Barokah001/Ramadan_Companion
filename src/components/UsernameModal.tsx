@@ -1,4 +1,4 @@
-// src/components/UsernameModal.tsx - PROPER SIZING
+// src/components/UsernameModal.tsx - Updated messaging
 
 import React, { useState } from "react";
 import { AlertCircle, CheckCircle, Loader } from "lucide-react";
@@ -40,33 +40,35 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div
-        className={`flex flex-col gap-3 items-center justify-center w-full max-w-sm h-90 px-10 ${
+        className={`flex flex-col gap-3 items-center justify-center w-full max-w-sm px-10 py-8 ${
           darkMode ? "bg-gray-800" : "bg-white"
         } rounded-2xl shadow-2xl`}
         style={{ maxWidth: "450px" }}
       >
+        {/* Icon */}
+        <div className="text-4xl">🌙</div>
 
         {/* Title */}
         <h2
-          className={`text-l font-bold text-center mb-1 ${
+          className={`text-xl font-bold text-center ${
             darkMode ? "text-gray-100" : "text-[#5C2E2E]"
           }`}
         >
-          Welcome to Ramadan Companion!
+          Ramadan Companion
         </h2>
 
         <p
-          className={`text-center text-l mb- ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
+          className={`text-center text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
         >
-          Choose your unique username to begin
+          Enter your username to continue — or choose a new one to get started
         </p>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="w-full space-y-4 mt-1">
           <div>
             <label
               htmlFor="username"
-              className={`block text-l font-medium mb-1.5 ${
+              className={`block text-sm font-medium mb-1.5 ${
                 darkMode ? "text-gray-200" : "text-[#5C2E2E]"
               }`}
             >
@@ -78,20 +80,18 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g., abdullah_123"
-              className={`w-full h-8 px-3 py-2.5 rounded-lg text-l border-none ${
+              className={`w-full px-3 py-2.5 rounded-lg text-sm border ${
                 darkMode
                   ? "bg-gray-700 text-gray-100 border-gray-600"
-                  : "bg-gray-50 text-[#5C2E2E]"
-              } focus:outline-none focus:ring-${
-                darkMode ? "amber-500" : "[#8B4545]"
-              }`}
+                  : "bg-gray-50 text-[#5C2E2E] border-gray-200"
+              } focus:outline-none focus:ring-2 focus:ring-[#8B4545]`}
               disabled={isSubmitting}
               autoFocus
             />
             <p
-              className={`text-sm mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
+              className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
             >
-              3-20 characters • lowercase, numbers, - and _
+              3–20 characters • lowercase letters, numbers, - and _
             </p>
           </div>
 
@@ -115,7 +115,7 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting || username.trim().length < 3}
-            className={`w-full h-8 py-2.5 rounded-lg font-medium text-sm ${
+            className={`w-full py-2.5 rounded-lg font-medium text-sm ${
               darkMode
                 ? "bg-amber-600 hover:bg-amber-700 text-white"
                 : "bg-[#8B4545] hover:bg-[#6B3535] text-white"
@@ -123,29 +123,25 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
               isSubmitting || username.trim().length < 3
                 ? "opacity-50 cursor-not-allowed"
                 : ""
-            } flex items-center justify-center gap-2`}
+            } flex items-center justify-center gap-2 transition-colors`}
           >
             {isSubmitting ? (
               <>
                 <Loader className="animate-spin" size={14} />
-                <span>Setting username...</span>
+                <span>Connecting...</span>
               </>
             ) : (
-              <span>Continue to App</span>
+              <span>Continue →</span>
             )}
           </button>
         </form>
 
-
-        {/* Footer */}
-        <div className=" flex items-center justify-center mt-3 text-center">
-          <p className="text-l">🌙</p>
-          <p
-            className={`text-xs ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
-          >
-            Ramadan Mubarak
-          </p>
-        </div>
+        {/* Footer note */}
+        <p
+          className={`text-xs text-center mt-1 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
+        >
+          Your data is private and tied to your username
+        </p>
       </div>
     </div>
   );
