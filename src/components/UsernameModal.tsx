@@ -1,4 +1,4 @@
-// src/components/UsernameModal.tsx - Updated messaging
+// src/components/UsernameModal.tsx - FIXED: better UX for returning users
 
 import React, { useState } from "react";
 import { AlertCircle, CheckCircle, Loader } from "lucide-react";
@@ -25,52 +25,44 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
     e.preventDefault();
     setMessage(null);
     setIsSubmitting(true);
-
     const result = await onSubmit(username);
-
-    if (!result.success) {
-      setMessage({ type: "error", text: result.message });
-    } else {
-      setMessage({ type: "success", text: result.message });
-    }
-
+    setMessage({
+      type: result.success ? "success" : "error",
+      text: result.message,
+    });
     setIsSubmitting(false);
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div
-        className={`flex flex-col gap-3 items-center justify-center w-full max-w-sm px-10 py-8 ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        } rounded-2xl shadow-2xl`}
-        style={{ maxWidth: "450px" }}
+        className={`flex flex-col gap-3 items-center justify-center w-full px-8 py-8 ${darkMode ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-2xl`}
+        style={{ maxWidth: "440px" }}
       >
-        {/* Icon */}
-        <div className="text-4xl">🌙</div>
+        {/* Logo */}
+        <div className="text-4xl mb-1">🌙</div>
 
         {/* Title */}
         <h2
-          className={`text-xl font-bold text-center ${
-            darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-          }`}
+          className={`text-xl font-bold text-center ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
         >
-          Ramadan Companion
+          Welcome to Ramadan Companion
         </h2>
 
+        {/* Subtitle */}
         <p
-          className={`text-center text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
+          className={`text-center text-sm leading-relaxed ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
         >
-          Enter your username to continue — or choose a new one to get started
+          Enter your username to begin — or type your existing username to pick
+          up where you left off.
         </p>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full space-y-4 mt-1">
+        <form onSubmit={handleSubmit} className="w-full space-y-4 mt-2">
           <div>
             <label
               htmlFor="username"
-              className={`block text-sm font-medium mb-1.5 ${
-                darkMode ? "text-gray-200" : "text-[#5C2E2E]"
-              }`}
+              className={`block text-sm font-medium mb-1.5 ${darkMode ? "text-gray-200" : "text-[#5C2E2E]"}`}
             >
               Username
             </label>
@@ -88,9 +80,7 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
               disabled={isSubmitting}
               autoFocus
             />
-            <p
-              className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
-            >
+            <p className="text-xs mt-1 text-gray-500">
               3–20 characters • lowercase letters, numbers, - and _
             </p>
           </div>
@@ -119,16 +109,12 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
               darkMode
                 ? "bg-amber-600 hover:bg-amber-700 text-white"
                 : "bg-[#8B4545] hover:bg-[#6B3535] text-white"
-            } ${
-              isSubmitting || username.trim().length < 3
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            } flex items-center justify-center gap-2 transition-colors`}
+            } ${isSubmitting || username.trim().length < 3 ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center gap-2`}
           >
             {isSubmitting ? (
               <>
                 <Loader className="animate-spin" size={14} />
-                <span>Connecting...</span>
+                <span>Checking…</span>
               </>
             ) : (
               <span>Continue →</span>
@@ -136,11 +122,13 @@ export const UsernameModal: React.FC<UsernameModalProps> = ({
           </button>
         </form>
 
-        {/* Footer note */}
+        {/* Hint */}
         <p
           className={`text-xs text-center mt-1 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
         >
-          Your data is private and tied to your username
+          New here? Your username will be created automatically.
+          <br />
+          Returning? Just type your existing username.
         </p>
       </div>
     </div>

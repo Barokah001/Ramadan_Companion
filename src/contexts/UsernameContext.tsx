@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-// src/contexts/UsernameContext.tsx - FIXED: Login existing + device lock
+// src/contexts/UsernameContext.tsx - FIXED: login existing + device-lock
 
 import React, {
   createContext,
@@ -23,18 +23,15 @@ const UsernameContext = createContext<UsernameContextType | undefined>(
   undefined,
 );
 
-// Generate a stable device ID for this browser
-function getOrCreateDeviceId(): string {
+// Generate/retrieve a persistent unique device ID
+const getDeviceId = (): string => {
   let deviceId = localStorage.getItem("ramadan-device-id");
   if (!deviceId) {
-    deviceId =
-      "device_" +
-      Math.random().toString(36).substring(2) +
-      Date.now().toString(36);
+    deviceId = `device-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     localStorage.setItem("ramadan-device-id", deviceId);
   }
   return deviceId;
-}
+};
 
 export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -42,7 +39,7 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
   const [username, setUsernameState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On mount: restore username from localStorage (device-specific session)
+  // On mount: restore from localStorage
   useEffect(() => {
     const loadUsername = async () => {
       try {
@@ -64,7 +61,7 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
   ): Promise<{ success: boolean; message: string }> => {
     const trimmedUsername = newUsername.trim().toLowerCase();
 
-    // ── Validation ───────────────────────────────────────────────────────────
+    // Validation
     if (!trimmedUsername)
       return { success: false, message: "Username cannot be empty" };
     if (trimmedUsername.length < 3)
@@ -77,107 +74,120 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
         success: false,
         message: "Username must be less than 20 characters",
       };
-    if (!/^[a-z0-9_-]+$/.test(trimmedUsername))
+    if (!/^[a-z0-9_-]+$/.test(trimmedUsername)) {
       return {
         success: false,
         message:
           "Username can only contain letters, numbers, hyphens and underscores",
       };
+    }
 
     try {
-      const deviceId = getOrCreateDeviceId();
+      const deviceId = getDeviceId();
 
-      // Check if this username already exists in Supabase
-      const existingUser = await storage.get(`user:${trimmedUsername}`);
+      // Check if username already exists in Supabase
+      const existing = await storage.get(`user:${trimmedUsername}`);
 
-      if (existingUser) {
-        // ── Username exists ───────────────────────────────────────────────────
-        let userData: Record<string, unknown> = {};
+      if (existing) {
+        // ── Username EXISTS ── try to log in
+        let userData: {
+          username: string;
+          createdAt: string;
+          deviceId?: string | null;
+        } | null = null;
         try {
-          userData = JSON.parse(existingUser.value);
+          userData = JSON.parse(existing.value);
         } catch {
-          userData = {};
+          userData = null;
         }
 
-        const lockedDeviceId = userData.deviceId as string | null | undefined;
+        const registeredDevice = userData?.deviceId;
 
-        if (lockedDeviceId && lockedDeviceId !== deviceId) {
-          // Locked to a DIFFERENT device → deny access
+        if (registeredDevice && registeredDevice !== deviceId) {
+          // Locked to a different device
           return {
             success: false,
             message:
-              "This username is currently logged in on another device. Please log out there first, then try again here.",
+              "⚠️ This username is currently active on another device. Please log out from that device first.",
           };
         }
 
-        // Either no lock, or same device → allow login
+        // Same device, or no device lock — grant access
         await storage.set(
           `user:${trimmedUsername}`,
           JSON.stringify({
-            ...userData,
             username: trimmedUsername,
-            deviceId, // lock to this device
-            lastLoginAt: new Date().toISOString(),
+            createdAt: userData?.createdAt ?? new Date().toISOString(),
+            deviceId, // (re-)register this device
           }),
         );
 
         localStorage.setItem("ramadan-username", trimmedUsername);
         setUsernameState(trimmedUsername);
-        return { success: true, message: "Welcome back! 🌙 Logging you in..." };
+        return {
+          success: true,
+          message: `Welcome back, ${trimmedUsername}! 🌙`,
+        };
       }
 
-      // ── Username does NOT exist → register fresh ──────────────────────────
+      // ── Username does NOT exist ── register new user
       await storage.set(
         `user:${trimmedUsername}`,
         JSON.stringify({
           username: trimmedUsername,
           createdAt: new Date().toISOString(),
-          deviceId, // lock to this device
-          lastLoginAt: new Date().toISOString(),
+          deviceId,
         }),
       );
 
       localStorage.setItem("ramadan-username", trimmedUsername);
       setUsernameState(trimmedUsername);
-      return { success: true, message: "Username created! Welcome aboard 🌙" };
+      return {
+        success: true,
+        message: "Username created! Welcome to Ramadan Companion 🌙",
+      };
     } catch (error) {
       console.error("Username set error:", error);
       return {
         success: false,
-        message: "Failed to connect. Check your connection and try again.",
+        message:
+          "Failed to save username. Please check your connection and try again.",
       };
     }
   };
 
   const logout = async () => {
-    const currentUsername = localStorage.getItem("ramadan-username");
-
-    if (currentUsername) {
+    const localUsername = localStorage.getItem("ramadan-username");
+    if (localUsername) {
       try {
-        // Remove the device lock from Supabase so the user can log in elsewhere
-        const existingUser = await storage.get(`user:${currentUsername}`);
-        if (existingUser) {
-          let userData: Record<string, unknown> = {};
+        // Release the device lock in Supabase so another device can log in
+        const existing = await storage.get(`user:${localUsername}`);
+        if (existing) {
+          let userData: {
+            username: string;
+            createdAt: string;
+            deviceId?: string | null;
+          } | null = null;
           try {
-            userData = JSON.parse(existingUser.value);
+            userData = JSON.parse(existing.value);
           } catch {
-            userData = {};
+            userData = null;
           }
-          await storage.set(
-            `user:${currentUsername}`,
-            JSON.stringify({
-              ...userData,
-              deviceId: null, // ← unlock the username
-              lastLogoutAt: new Date().toISOString(),
-            }),
-          );
+          if (userData) {
+            await storage.set(
+              `user:${localUsername}`,
+              JSON.stringify({
+                username: userData.username,
+                createdAt: userData.createdAt,
+                deviceId: null,
+              }),
+            );
+          }
         }
-      } catch (error) {
-        // Non-critical: still clear local session
-        console.error("Logout unlock error:", error);
+      } catch (err) {
+        console.error("Logout cleanup error:", err);
       }
     }
-
     localStorage.removeItem("ramadan-username");
     setUsernameState(null);
   };
@@ -193,8 +203,7 @@ export const UsernameProvider: React.FC<{ children: ReactNode }> = ({
 
 export const useUsername = (): UsernameContextType => {
   const context = useContext(UsernameContext);
-  if (!context) {
+  if (!context)
     throw new Error("useUsername must be used within a UsernameProvider");
-  }
   return context;
 };
