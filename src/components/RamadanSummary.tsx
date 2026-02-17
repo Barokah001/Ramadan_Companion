@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/RamadanSummary.tsx - Complete Ramadan Journey Summary
+// src/components/RamadanSummary.tsx - FIXED: correct progress % (no custom tasks)
 
 import React, { useState, useEffect } from "react";
 import {
@@ -16,13 +16,36 @@ import {
 } from "lucide-react";
 import { storage } from "../lib/supabase";
 
+// ─── Same weights as DailyTasks / TenDaySummary ──────────────────────────────
+const PRAYER_WEIGHT = 35;
+const MORNING_WEIGHT = 15;
+const EVENING_WEIGHT = 15;
+const QURAN_WEIGHT = 20;
+const QURAN_TARGET = 4;
+const REQUIRED_TOTAL =
+  PRAYER_WEIGHT + MORNING_WEIGHT + EVENING_WEIGHT + QURAN_WEIGHT; // 85
+
+const calcProgress = (
+  prayers: number,
+  morningDhikr: boolean,
+  eveningDhikr: boolean,
+  quranPages: number,
+): number => {
+  const raw =
+    (prayers / 5) * PRAYER_WEIGHT +
+    (morningDhikr ? MORNING_WEIGHT : 0) +
+    (eveningDhikr ? EVENING_WEIGHT : 0) +
+    Math.min(quranPages / QURAN_TARGET, 1) * QURAN_WEIGHT;
+  return Math.round((raw / REQUIRED_TOTAL) * 100);
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface RamadanDay {
   date: string;
   prayers: number;
   quranPages: number;
   morningDhikr: boolean;
   eveningDhikr: boolean;
-  customTasksCompleted: number;
   totalProgress: number;
   dayNumber: number;
 }
@@ -30,8 +53,8 @@ interface RamadanDay {
 interface RamadanSummaryProps {
   darkMode?: boolean;
   username: string;
-  ramadanStartDate: string; // Format: "2026-03-01"
-  ramadanDays: number; // 29 or 30
+  ramadanStartDate: string;
+  ramadanDays: number;
 }
 
 export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
@@ -42,7 +65,7 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
 }) => {
   const [allDays, setAllDays] = useState<RamadanDay[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedWeek, setSelectedWeek] = useState<number>(0); // 0 = All, 1-4 = specific weeks
+  const [selectedWeek, setSelectedWeek] = useState<number>(0);
 
   useEffect(() => {
     loadRamadanData();
@@ -61,32 +84,22 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
       try {
         const stored = await storage.get(`daily-tasks:${username}:${dateStr}`);
         if (stored) {
-          const dayData = JSON.parse(stored.value);
+          const d = JSON.parse(stored.value);
           const prayerCount =
-            dayData.prayers?.filter((p: { completed: boolean }) => p.completed)
+            d.prayers?.filter((p: { completed: boolean }) => p.completed)
               .length || 0;
-          const customCompleted =
-            dayData.customTasks?.filter(
-              (t: { completed: boolean }) => t.completed,
-            ).length || 0;
-          const customTotal = dayData.customTasks?.length || 0;
-
-          const totalProgress = Math.round(
-            (prayerCount / 5) * 35 +
-              (dayData.morningDhikr ? 15 : 0) +
-              (dayData.eveningDhikr ? 15 : 0) +
-              Math.min((dayData.quranPages || 0) / 4, 1) * 20 +
-              (customTotal > 0 ? (customCompleted / customTotal) * 15 : 0),
-          );
-
           data.push({
             date: dateStr,
             prayers: prayerCount,
-            quranPages: dayData.quranPages || 0,
-            morningDhikr: dayData.morningDhikr || false,
-            eveningDhikr: dayData.eveningDhikr || false,
-            customTasksCompleted: customCompleted,
-            totalProgress,
+            quranPages: d.quranPages || 0,
+            morningDhikr: d.morningDhikr || false,
+            eveningDhikr: d.eveningDhikr || false,
+            totalProgress: calcProgress(
+              prayerCount,
+              d.morningDhikr || false,
+              d.eveningDhikr || false,
+              d.quranPages || 0,
+            ),
             dayNumber: i + 1,
           });
         } else {
@@ -96,19 +109,17 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
             quranPages: 0,
             morningDhikr: false,
             eveningDhikr: false,
-            customTasksCompleted: 0,
             totalProgress: 0,
             dayNumber: i + 1,
           });
         }
-      } catch (err) {
+      } catch {
         data.push({
           date: dateStr,
           prayers: 0,
           quranPages: 0,
           morningDhikr: false,
           eveningDhikr: false,
-          customTasksCompleted: 0,
           totalProgress: 0,
           dayNumber: i + 1,
         });
@@ -119,52 +130,40 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
     setLoading(false);
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
-  };
 
-  // Calculate stats
-  const totalPrayers = allDays.reduce((sum, day) => sum + day.prayers, 0);
+  const totalPrayers = allDays.reduce((s, d) => s + d.prayers, 0);
   const maxPrayers = ramadanDays * 5;
-  const totalQuran = allDays.reduce((sum, day) => sum + day.quranPages, 0);
+  const totalQuran = allDays.reduce((s, d) => s + d.quranPages, 0);
   const totalMorningDhikr = allDays.filter((d) => d.morningDhikr).length;
   const totalEveningDhikr = allDays.filter((d) => d.eveningDhikr).length;
   const avgProgress =
     allDays.length > 0
       ? Math.round(
-          allDays.reduce((sum, day) => sum + day.totalProgress, 0) /
-            allDays.length,
+          allDays.reduce((s, d) => s + d.totalProgress, 0) / allDays.length,
         )
       : 0;
 
-  // Find best streak
-  let currentStreak = 0;
-  let bestStreak = 0;
+  let currentStreak = 0,
+    bestStreak = 0;
   allDays.forEach((day) => {
     if (day.totalProgress >= 70) {
       currentStreak++;
       bestStreak = Math.max(bestStreak, currentStreak);
-    } else {
-      currentStreak = 0;
-    }
+    } else currentStreak = 0;
   });
 
-  // Find top 3 days
   const topDays = [...allDays]
     .sort((a, b) => b.totalProgress - a.totalProgress)
     .slice(0, 3);
 
-  // Weekly breakdown
   const weeks = [];
   for (let i = 0; i < Math.ceil(ramadanDays / 7); i++) {
-    weeks.push({
-      number: i + 1,
-      days: allDays.slice(i * 7, (i + 1) * 7),
-    });
+    weeks.push({ number: i + 1, days: allDays.slice(i * 7, (i + 1) * 7) });
   }
 
   const getBadge = () => {
@@ -189,39 +188,28 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
 
   const badge = getBadge();
 
-  if (loading) {
+  if (loading)
     return (
       <div
-        className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-12 sm:p-16 shadow-xl border text-center`}
+        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-[#5C2E2E]/10"} rounded-2xl p-12 sm:p-16 shadow-xl border text-center`}
       >
         <Loader
-          className={`${
-            darkMode ? "text-gray-100" : "text-[#5C2E2E]"
-          } animate-spin mx-auto mb-4`}
+          className={`${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} animate-spin mx-auto mb-4`}
           size={48}
         />
         <p
           className={`${darkMode ? "text-gray-400" : "text-[#8B4545]"} text-lg`}
         >
-          Loading your Ramadan journey...
+          Loading your Ramadan journey…
         </p>
       </div>
     );
-  }
 
   return (
     <div className="space-y-8">
-      {/* Hero Header */}
+      {/* Hero */}
       <div
-        className={`${
-          darkMode
-            ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700"
-            : "bg-gradient-to-br from-[#8B4545] to-[#6B3535] border-white"
-        } rounded-3xl p-8 sm:p-12 shadow-2xl border-4 text-center relative overflow-hidden`}
+        className={`${darkMode ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700" : "bg-gradient-to-br from-[#8B4545] to-[#6B3535] border-white"} rounded-3xl p-8 sm:p-12 shadow-2xl border-4 text-center relative overflow-hidden`}
       >
         <div className="absolute top-0 right-0 text-9xl opacity-5">🌙</div>
         <div className="relative z-10">
@@ -240,119 +228,69 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
           >
             {badge.text}
           </div>
+          <p className="text-white/60 text-sm mt-4">
+            Progress based on prayers, adhkar & Quran reading
+          </p>
         </div>
       </div>
 
-      {/* Overall Stats Grid */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div
-          className={`${
-            darkMode
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-[#5C2E2E]/10"
-          } rounded-2xl p-6 shadow-xl border text-center`}
-        >
-          <CheckCircle className="mx-auto mb-3 text-green-500" size={32} />
+        {[
+          {
+            icon: (
+              <CheckCircle className="mx-auto mb-3 text-green-500" size={32} />
+            ),
+            value: totalPrayers,
+            label: "Total Prayers",
+            sub: `out of ${maxPrayers}`,
+          },
+          {
+            icon: <BookOpen className="mx-auto mb-3 text-blue-500" size={32} />,
+            value: totalQuran,
+            label: "Quran Pages",
+            sub: `${(totalQuran / 6.04).toFixed(1)} Juz`,
+          },
+          {
+            icon: <Heart className="mx-auto mb-3 text-purple-500" size={32} />,
+            value: totalMorningDhikr + totalEveningDhikr,
+            label: "Adhkar Sessions",
+            sub: `${totalMorningDhikr} morning • ${totalEveningDhikr} evening`,
+          },
+          {
+            icon: <Star className="mx-auto mb-3 text-amber-500" size={32} />,
+            value: bestStreak,
+            label: "Best Streak",
+            sub: "days above 70%",
+          },
+        ].map(({ icon, value, label, sub }) => (
           <div
-            className={`text-4xl font-bold mb-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
+            key={label}
+            className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-[#5C2E2E]/10"} rounded-2xl p-6 shadow-xl border text-center`}
           >
-            {totalPrayers}
+            {icon}
+            <div
+              className={`text-4xl font-bold mb-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
+            >
+              {value}
+            </div>
+            <p
+              className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
+            >
+              {label}
+            </p>
+            <p
+              className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
+            >
+              {sub}
+            </p>
           </div>
-          <p
-            className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
-          >
-            Total Prayers
-          </p>
-          <p
-            className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
-          >
-            out of {maxPrayers}
-          </p>
-        </div>
-
-        <div
-          className={`${
-            darkMode
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-[#5C2E2E]/10"
-          } rounded-2xl p-6 shadow-xl border text-center`}
-        >
-          <BookOpen className="mx-auto mb-3 text-blue-500" size={32} />
-          <div
-            className={`text-4xl font-bold mb-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
-          >
-            {totalQuran}
-          </div>
-          <p
-            className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
-          >
-            Quran Pages
-          </p>
-          <p
-            className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
-          >
-            {(totalQuran / 6.04).toFixed(1)} Juz
-          </p>
-        </div>
-
-        <div
-          className={`${
-            darkMode
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-[#5C2E2E]/10"
-          } rounded-2xl p-6 shadow-xl border text-center`}
-        >
-          <Heart className="mx-auto mb-3 text-purple-500" size={32} />
-          <div
-            className={`text-4xl font-bold mb-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
-          >
-            {totalMorningDhikr + totalEveningDhikr}
-          </div>
-          <p
-            className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
-          >
-            Adhkar Sessions
-          </p>
-          <p
-            className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
-          >
-            {totalMorningDhikr} morning • {totalEveningDhikr} evening
-          </p>
-        </div>
-
-        <div
-          className={`${
-            darkMode
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-[#5C2E2E]/10"
-          } rounded-2xl p-6 shadow-xl border text-center`}
-        >
-          <Star className="mx-auto mb-3 text-amber-500" size={32} />
-          <div
-            className={`text-4xl font-bold mb-2 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
-          >
-            {bestStreak}
-          </div>
-          <p
-            className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
-          >
-            Best Streak
-          </p>
-          <p
-            className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}
-          >
-            days above 70%
-          </p>
-        </div>
+        ))}
       </div>
 
       {/* Top 3 Days */}
       <div
-        className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 shadow-xl border`}
+        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-[#5C2E2E]/10"} rounded-2xl p-6 sm:p-8 shadow-xl border`}
       >
         <h3
           className={`text-2xl font-bold mb-6 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
@@ -394,11 +332,7 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
 
       {/* Weekly Breakdown */}
       <div
-        className={`${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-[#5C2E2E]/10"
-        } rounded-2xl p-6 sm:p-8 shadow-xl border`}
+        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-[#5C2E2E]/10"} rounded-2xl p-6 sm:p-8 shadow-xl border`}
       >
         <h3
           className={`text-2xl font-bold mb-6 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
@@ -406,41 +340,23 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
         >
           📊 Weekly Breakdown
         </h3>
-
         <div className="flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setSelectedWeek(0)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              selectedWeek === 0
-                ? darkMode
-                  ? "bg-amber-600 text-white"
-                  : "bg-[#8B4545] text-white"
-                : darkMode
-                  ? "bg-gray-700 text-gray-300"
-                  : "bg-gray-100 text-[#8B4545]"
-            }`}
-          >
-            All Weeks
-          </button>
-          {weeks.map((week) => (
+          {[
+            { label: "All Weeks", value: 0 },
+            ...weeks.map((w) => ({
+              label: `Week ${w.number}`,
+              value: w.number,
+            })),
+          ].map(({ label, value }) => (
             <button
-              key={week.number}
-              onClick={() => setSelectedWeek(week.number)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                selectedWeek === week.number
-                  ? darkMode
-                    ? "bg-amber-600 text-white"
-                    : "bg-[#8B4545] text-white"
-                  : darkMode
-                    ? "bg-gray-700 text-gray-300"
-                    : "bg-gray-100 text-[#8B4545]"
-              }`}
+              key={value}
+              onClick={() => setSelectedWeek(value)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedWeek === value ? (darkMode ? "bg-amber-600 text-white" : "bg-[#8B4545] text-white") : darkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-[#8B4545]"}`}
             >
-              Week {week.number}
+              {label}
             </button>
           ))}
         </div>
-
         <div className="grid grid-cols-7 gap-2">
           {(selectedWeek === 0
             ? allDays
@@ -469,48 +385,26 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
             </div>
           ))}
         </div>
-
         <div className="flex gap-4 mt-4 flex-wrap justify-center text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
-            <span className={darkMode ? "text-gray-300" : "text-gray-700"}>
-              80%+
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-4 h-4 rounded ${darkMode ? "bg-amber-600" : "bg-amber-500"}`}
-            ></div>
-            <span className={darkMode ? "text-gray-300" : "text-gray-700"}>
-              60-79%
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-4 h-4 rounded ${darkMode ? "bg-gray-600" : "bg-yellow-300"}`}
-            ></div>
-            <span className={darkMode ? "text-gray-300" : "text-gray-700"}>
-              40-59%
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-4 h-4 rounded ${darkMode ? "bg-gray-700" : "bg-gray-200"}`}
-            ></div>
-            <span className={darkMode ? "text-gray-300" : "text-gray-700"}>
-              0-39%
-            </span>
-          </div>
+          {[
+            ["bg-green-500", "80%+"],
+            [darkMode ? "bg-amber-600" : "bg-amber-500", "60-79%"],
+            [darkMode ? "bg-gray-600" : "bg-yellow-300", "40-59%"],
+            [darkMode ? "bg-gray-700" : "bg-gray-200", "0-39%"],
+          ].map(([cls, label]) => (
+            <div key={label} className="flex items-center gap-2">
+              <div className={`w-4 h-4 rounded ${cls}`}></div>
+              <span className={darkMode ? "text-gray-300" : "text-gray-700"}>
+                {label}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Final Message */}
       <div
-        className={`${
-          darkMode
-            ? "bg-gradient-to-br from-amber-900/20 to-amber-800/20 border-amber-700"
-            : "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200"
-        } rounded-2xl p-8 shadow-xl border-2 text-center`}
+        className={`${darkMode ? "bg-gradient-to-br from-amber-900/20 to-amber-800/20 border-amber-700" : "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200"} rounded-2xl p-8 shadow-xl border-2 text-center`}
       >
         <Moon
           className={`mx-auto mb-4 ${darkMode ? "text-amber-400" : "text-amber-600"}`}
@@ -534,6 +428,12 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
             : avgProgress >= 50
               ? `You maintained an average of ${avgProgress}% throughout this blessed month. Your effort and commitment are commendable. May Allah continue to guide you and increase you in faith! 🤲`
               : `You achieved ${avgProgress}% this Ramadan. Remember, every prayer, every page, every dhikr counts! May Allah accept your efforts and make next Ramadan even better! 🤲`}
+        </p>
+        <p
+          className={`mt-4 text-sm ${darkMode ? "text-gray-500" : "text-gray-400"}`}
+        >
+          Average based on prayers (35%), adhkar (30%) and Quran reading (20%) —
+          custom tasks not included
         </p>
         <div className="mt-6 text-4xl">🌙</div>
       </div>
