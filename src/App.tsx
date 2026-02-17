@@ -371,7 +371,7 @@ const App: React.FC = () => {
           <TenDaySummary
             darkMode={darkMode}
             username={username}
-            ramadanStartDate="2026-02-14"
+            ramadanStartDate="2026-02-18"
           />
         )}
 
@@ -380,7 +380,7 @@ const App: React.FC = () => {
           <RamadanSummary
             darkMode={darkMode}
             username={username}
-            ramadanStartDate="2026-02-14"
+            ramadanStartDate="2026-02-18"
             ramadanDays={30}
           />
         )}

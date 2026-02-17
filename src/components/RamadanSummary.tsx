@@ -427,7 +427,6 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
           Average based on prayers (35%), adhkar (30%) and Quran reading (20%) —
           custom tasks not included
         </p>
-        <div className="mt-6 text-4xl">🌙</div>
       </div>
     </div>
   );

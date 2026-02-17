@@ -29,7 +29,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   };
 
   return (
-    <section className="flex flex-col gap-3 sm:mb-12 lg:mb-20">
+    <section className="flex flex-col gap-3 mb-6">
       {/* Header */}
       <div className="text-center mb-6 sm:mb-8 lg:mb-10 px-4">
         <h2
