@@ -3,18 +3,15 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Calendar,
-  Award,
   Heart,
   BookOpen,
   CheckCircle,
-  Sparkles,
   Loader,
-  TrendingUp,
   Star,
   Moon,
 } from "lucide-react";
 import { storage } from "../lib/supabase";
+import { formatLocalDate, parseLocalDate } from "../utils/dateUtils";
 
 // ─── Same weights as DailyTasks / TenDaySummary ──────────────────────────────
 const PRAYER_WEIGHT = 35;
@@ -83,11 +80,8 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
 
-      // Format as YYYY-MM-DD in local timezone
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const dateStr = `${year}-${month}-${day}`;
+    const dateStr = formatLocalDate(date);
+
 
       try {
         const stored = await storage.get(`daily-tasks:${username}:${dateStr}`);
@@ -139,10 +133,11 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
   };
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
+    parseLocalDate(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
+
 
   const totalPrayers = allDays.reduce((s, d) => s + d.prayers, 0);
   const maxPrayers = ramadanDays * 5;
@@ -414,10 +409,6 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
       <div
         className={`${darkMode ? "bg-gradient-to-br from-amber-900/20 to-amber-800/20 border-amber-700" : "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200"} rounded-2xl p-8 shadow-xl border-2 text-center`}
       >
-        <Moon
-          className={`mx-auto mb-4 ${darkMode ? "text-amber-400" : "text-amber-600"}`}
-          size={48}
-        />
         <h3
           className={`text-2xl font-bold mb-4 ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
           style={{ fontFamily: "Playfair Display, serif" }}
@@ -443,7 +434,6 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
           Average based on prayers (35%), adhkar (30%) and Quran reading (20%) —
           custom tasks not included
         </p>
-        <div className="mt-6 text-4xl">🌙</div>
       </div>
     </div>
   );

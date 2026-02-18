@@ -19,6 +19,7 @@ import {
   Moon,
 } from "lucide-react";
 import { storage } from "../lib/supabase";
+import { formatLocalDate, parseLocalDate } from "../utils/dateUtils";
 
 // ─── Same weights as DailyTasks ───────────────────────────────────────────────
 const PRAYER_WEIGHT = 35;
@@ -356,7 +357,7 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
   };
 
   const formatDate = (dateStr: string, opts?: Intl.DateTimeFormatOptions) => {
-    const date = new Date(dateStr);
+  const date = parseLocalDate(dateStr);
     return date.toLocaleDateString(
       "en-US",
       opts ?? { weekday: "long", month: "long", day: "numeric" },
@@ -364,7 +365,7 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
   };
 
   const formatShortDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("en-US", {
+    parseLocalDate(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
@@ -377,7 +378,8 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
     const data: DayData[] = [];
     for (let day = period.startDay; day <= period.endDay; day++) {
       const dateObj = ramadanDayToDate(day);
-      const dateStr = dateObj.toISOString().split("T")[0];
+      const dateStr = formatLocalDate(dateObj);
+
 
       try {
         const stored = await storage.get(`daily-tasks:${username}:${dateStr}`);
