@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import {
+  TrendingUp,
   Calendar,
   Award,
   Heart,
@@ -15,6 +16,7 @@ import {
   Circle,
   X,
   Lock,
+  Moon,
 } from "lucide-react";
 import { storage } from "../lib/supabase";
 
@@ -270,6 +272,10 @@ const ComingSoonCard: React.FC<{
           className={darkMode ? "text-amber-400" : "text-[#8B4545]"}
         />
       </div>
+      <Moon
+        size={28}
+        className={darkMode ? "text-amber-400" : "text-[#8B4545]"}
+      />
       <h3
         className={`text-2xl font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
         style={{ fontFamily: "Playfair Display, serif" }}
@@ -296,8 +302,8 @@ const ComingSoonCard: React.FC<{
 interface TenDaySummaryProps {
   darkMode?: boolean;
   username: string;
-  ramadanStartDate: string; 
-  ramadanDays?: number; 
+  ramadanStartDate: string; // "YYYY-MM-DD"
+  ramadanDays?: number; // 29 or 30 (default 30)
 }
 
 // ── Period definition ──
@@ -326,9 +332,13 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
     { label: "Last Days", periodNumber: 3, startDay: 21, endDay: ramadanDays },
   ];
 
+  // ── FIX: Use local dates to avoid timezone offset issues ──
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const ramadanStart = new Date(ramadanStartDate);
+
+  // Parse ramadanStartDate as LOCAL date (not UTC)
+  const [year, month, day] = ramadanStartDate.split("-").map(Number);
+  const ramadanStart = new Date(year, month - 1, day); // month is 0-indexed
   ramadanStart.setHours(0, 0, 0, 0);
 
   // Which Ramadan day are we on today? (1-based; 0 = before Ramadan)

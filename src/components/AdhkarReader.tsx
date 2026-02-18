@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/AdhkarReader.tsx - FIXED: Morning & evening progress are fully separate
+// src/components/AdhkarReader.tsx - FIXED: morning/evening fully independent progress
 
 import React, { useState, useEffect, useRef } from "react";
 import { CheckCircle, RotateCcw, BookOpen, Sun, Moon } from "lucide-react";
@@ -20,87 +20,76 @@ const EMPTY_PROGRESS: DhikrProgress = { counters: {}, completed: {} };
 
 export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
   darkMode = false,
-  username,
 }) => {
   const [activeTab, setActiveTab] = useState<"morning" | "evening">("morning");
-
-  // Each tab has its OWN independent progress state
-  const [morningProgress, setMorningProgress] =
-    useState<DhikrProgress>(EMPTY_PROGRESS);
-  const [eveningProgress, setEveningProgress] =
-    useState<DhikrProgress>(EMPTY_PROGRESS);
+  const [progress, setProgress] = useState<DhikrProgress>(EMPTY_PROGRESS);
+  // Track whether the current progress has been loaded (to avoid premature saves)
+  const loadedRef = useRef(false);
 
   const currentAdhkar = activeTab === "morning" ? morningAdhkar : eveningAdhkar;
-  const currentProgress =
-    activeTab === "morning" ? morningProgress : eveningProgress;
-  const setCurrentProgress =
-    activeTab === "morning" ? setMorningProgress : setEveningProgress;
 
-  // Track whether we've loaded each tab (to avoid saving before loading)
-  const morningLoaded = useRef(false);
-  const eveningLoaded = useRef(false);
-  const currentLoaded = activeTab === "morning" ? morningLoaded : eveningLoaded;
-
-  // ── Load progress for the current tab whenever the tab changes ─────────
+  // ── Load progress for the active tab ──
+  // Each tab has its own isolated storage key: adhkar-morning-YYYY-MM-DD
   useEffect(() => {
+    loadedRef.current = false; // mark as not-yet-loaded while we fetch
+    setProgress(EMPTY_PROGRESS); // clear UI immediately on tab switch
+
     const loadProgress = async () => {
-      currentLoaded.current = false;
       try {
-        const today = new Date().toISOString().split("T")[0];
-        // Key includes both tab AND date → fully isolated
+        // Get today's date in local timezone
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const today = `${year}-${month}-${day}`;
+
         const key = `adhkar-${activeTab}-${today}`;
         const stored = await storage.get(key);
         if (stored) {
-          setCurrentProgress(JSON.parse(stored.value));
+          setProgress(JSON.parse(stored.value));
         } else {
-          setCurrentProgress(EMPTY_PROGRESS);
+          setProgress(EMPTY_PROGRESS);
         }
       } catch {
-        setCurrentProgress(EMPTY_PROGRESS);
+        setProgress(EMPTY_PROGRESS);
       } finally {
-        currentLoaded.current = true;
+        loadedRef.current = true; // now safe to save
       }
     };
+
     loadProgress();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [activeTab]); // re-runs whenever the tab changes
 
-  // ── Save whenever morningProgress changes (only after it's been loaded) ─
+  // ── Save progress (only after it has been loaded) ──
   useEffect(() => {
-    if (!morningLoaded.current) return;
-    const save = async () => {
-      const today = new Date().toISOString().split("T")[0];
+    if (!loadedRef.current) return; // don't save the empty reset state
+    if (
+      Object.keys(progress.counters).length === 0 &&
+      Object.keys(progress.completed).length === 0
+    )
+      return;
+
+    const saveProgress = async () => {
       try {
-        await storage.set(
-          `adhkar-morning-${today}`,
-          JSON.stringify(morningProgress),
-        );
-      } catch {
-        /* silent */
+        // Get today's date in local timezone
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const today = `${year}-${month}-${day}`;
+
+        const key = `adhkar-${activeTab}-${today}`;
+        await storage.set(key, JSON.stringify(progress));
+      } catch (err) {
+        console.error("Save failed:", err);
       }
     };
-    save();
-  }, [morningProgress]);
 
-  // ── Save whenever eveningProgress changes (only after it's been loaded) ─
-  useEffect(() => {
-    if (!eveningLoaded.current) return;
-    const save = async () => {
-      const today = new Date().toISOString().split("T")[0];
-      try {
-        await storage.set(
-          `adhkar-evening-${today}`,
-          JSON.stringify(eveningProgress),
-        );
-      } catch {
-        /* silent */
-      }
-    };
-    save();
-  }, [eveningProgress]);
+    saveProgress();
+  }, [progress, activeTab]);
 
   const incrementCounter = (dhikr: DhikrItem) => {
-    setCurrentProgress((prev) => {
+    setProgress((prev) => {
       const currentCount = prev.counters[dhikr.id] || 0;
       const newCount = Math.min(currentCount + 1, dhikr.repetitions);
       const isComplete = newCount >= dhikr.repetitions;
@@ -112,7 +101,7 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
   };
 
   const decrementCounter = (dhikr: DhikrItem) => {
-    setCurrentProgress((prev) => {
+    setProgress((prev) => {
       const currentCount = prev.counters[dhikr.id] || 0;
       const newCount = Math.max(currentCount - 1, 0);
       const isComplete = newCount >= dhikr.repetitions;
@@ -124,16 +113,30 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
   };
 
   const resetDhikr = (id: string) => {
-    setCurrentProgress((prev) => ({
+    setProgress((prev) => ({
       counters: { ...prev.counters, [id]: 0 },
       completed: { ...prev.completed, [id]: false },
     }));
   };
 
-  const resetAll = () => setCurrentProgress(EMPTY_PROGRESS);
+  const resetAll = () => {
+    loadedRef.current = true; // allow save after manual reset
+    setProgress(EMPTY_PROGRESS);
+
+    // Get today's date in local timezone
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const today = `${year}-${month}-${day}`;
+
+    // Explicitly clear storage for this tab/day
+    const key = `adhkar-${activeTab}-${today}`;
+    storage.set(key, JSON.stringify(EMPTY_PROGRESS)).catch(console.error);
+  };
 
   const totalCompleted = currentAdhkar.filter(
-    (d) => currentProgress.completed[d.id],
+    (d) => progress.completed[d.id],
   ).length;
   const progressPercent = Math.round(
     (totalCompleted / currentAdhkar.length) * 100,
@@ -179,42 +182,37 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
         <div
           className={`flex p-1.5 rounded-3xl mb-10 ${darkMode ? "bg-gray-900" : "bg-gray-100"}`}
         >
-          {(["morning", "evening"] as const).map((tab) => {
-            const tabProgress =
-              tab === "morning" ? morningProgress : eveningProgress;
-            const tabAdhkar = tab === "morning" ? morningAdhkar : eveningAdhkar;
-            const tabDone = tabAdhkar.filter(
-              (d) => tabProgress.completed[d.id],
-            ).length;
-            const isActive = activeTab === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[1.25rem] font-bold text-sm transition-all ${
-                  isActive
-                    ? darkMode
-                      ? "bg-amber-600 text-white shadow-lg"
-                      : "bg-white text-[#8B4545] shadow-md"
-                    : darkMode
-                      ? "text-gray-500 hover:text-gray-300"
-                      : "text-[#8B4545]/50 hover:text-[#8B4545]"
-                }`}
-              >
-                {tab === "morning" ? <Sun size={18} /> : <Moon size={18} />}
-                <span>{tab === "morning" ? "Morning" : "Evening"}</span>
-                {/* Mini badge showing other tab progress */}
-                <span
-                  className={`text-xs px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/20" : darkMode ? "bg-gray-700" : "bg-gray-200"}`}
-                >
-                  {tabDone}/{tabAdhkar.length}
-                </span>
-              </button>
-            );
-          })}
+          <button
+            onClick={() => setActiveTab("morning")}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[1.25rem] font-bold text-sm transition-all ${
+              activeTab === "morning"
+                ? darkMode
+                  ? "bg-amber-600 text-white shadow-lg"
+                  : "bg-white text-[#8B4545] shadow-md"
+                : darkMode
+                  ? "text-gray-500 hover:text-gray-300"
+                  : "text-[#8B4545]/50 hover:text-[#8B4545]"
+            }`}
+          >
+            <Sun size={18} /> Morning
+          </button>
+          <button
+            onClick={() => setActiveTab("evening")}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[1.25rem] font-bold text-sm transition-all ${
+              activeTab === "evening"
+                ? darkMode
+                  ? "bg-amber-600 text-white shadow-lg"
+                  : "bg-white text-[#8B4545] shadow-md"
+                : darkMode
+                  ? "text-gray-500 hover:text-gray-300"
+                  : "text-[#8B4545]/50 hover:text-[#8B4545]"
+            }`}
+          >
+            <Moon size={18} /> Evening
+          </button>
         </div>
 
-        {/* Overall Progress for current tab */}
+        {/* Overall Progress */}
         <div className="space-y-4">
           <div className="flex justify-between items-end">
             <span
@@ -239,11 +237,11 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
         </div>
       </div>
 
-      {/* Adhkar Items */}
+      {/* Adhkar Items Grid */}
       <div className="grid grid-cols-1 gap-6">
         {currentAdhkar.map((dhikr) => {
-          const count = currentProgress.counters[dhikr.id] || 0;
-          const isCompleted = currentProgress.completed[dhikr.id] || false;
+          const count = progress.counters[dhikr.id] || 0;
+          const isCompleted = progress.completed[dhikr.id] || false;
 
           return (
             <div
@@ -352,10 +350,12 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
                       +
                     </button>
                   </div>
+
                   <div className="text-sm font-bold uppercase tracking-widest opacity-40">
                     of {dhikr.repetitions}
                   </div>
                 </div>
+
                 <div
                   className={`px-5 py-2 rounded-2xl text-xs font-bold ${darkMode ? "bg-gray-900 text-gray-500" : "bg-gray-100 text-gray-400"}`}
                 >

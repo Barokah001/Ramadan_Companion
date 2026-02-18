@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/DailyTasks.tsx - FIXED: Progress % based on required tasks only
+// src/components/DailyTasks.tsx - FIXED: progress % excludes custom tasks
 
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, Calendar } from "lucide-react";
@@ -24,27 +24,36 @@ interface DailyTasksProps {
 
 const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
-// ── Progress calculation (required tasks only, no custom tasks) ────────────
-//  Prayers        5 × 7 pts  = 35 pts  (35%)
-//  Morning Adhkar 1 × 15 pts = 15 pts  (15%)
-//  Evening Adhkar 1 × 15 pts = 15 pts  (15%)
-//  Quran reading  capped 20  = 20 pts  (20%)  goal: 4 pages = full
-//  ─────────────────────────────────────────
-//  Total tracked                85 pts → scaled to 100%
-// ──────────────────────────────────────────────────────────────────────────
-function calcProgress(p: {
-  completedPrayers: number;
-  morningDhikr: boolean;
-  eveningDhikr: boolean;
-  quranPages: number;
-}): number {
-  const prayers = (p.completedPrayers / 5) * 35;
-  const morning = p.morningDhikr ? 15 : 0;
-  const evening = p.eveningDhikr ? 15 : 0;
-  const quran = Math.min((p.quranPages / 4) * 20, 20);
-  const raw = prayers + morning + evening + quran; // max 85
-  return Math.min(Math.round((raw / 85) * 100), 100);
-}
+// ─── Progress is based ONLY on required tasks ───
+// Weights (must sum to 100):
+//   Prayers      : 5 prayers × 7 pts each = 35 pts
+//   Morning Dhikr: 15 pts
+//   Evening Dhikr: 15 pts
+//   Quran Pages  : up to 20 pts (capped at 4 pages = full credit)
+//   Custom tasks : NOT included in the percentage
+// Total possible: 85 pts → normalised to 100%
+const PRAYER_WEIGHT = 35; // 5 prayers, 7 pts each
+const MORNING_WEIGHT = 15;
+const EVENING_WEIGHT = 15;
+const QURAN_WEIGHT = 20; // 4+ pages = full credit
+const QURAN_TARGET = 4; // pages for full Quran credit
+const REQUIRED_TOTAL =
+  PRAYER_WEIGHT + MORNING_WEIGHT + EVENING_WEIGHT + QURAN_WEIGHT; // = 85
+
+const calcProgress = (
+  prayers: Prayer[],
+  morningDhikr: boolean,
+  eveningDhikr: boolean,
+  quranPages: number,
+): number => {
+  const prayerScore =
+    (prayers.filter((p) => p.completed).length / 5) * PRAYER_WEIGHT;
+  const morningScore = morningDhikr ? MORNING_WEIGHT : 0;
+  const eveningScore = eveningDhikr ? EVENING_WEIGHT : 0;
+  const quranScore = Math.min(quranPages / QURAN_TARGET, 1) * QURAN_WEIGHT;
+  const raw = prayerScore + morningScore + eveningScore + quranScore;
+  return Math.round((raw / REQUIRED_TOTAL) * 100);
+};
 
 export const DailyTasks: React.FC<DailyTasksProps> = ({
   darkMode = false,
@@ -59,32 +68,46 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
   const [morningDhikr, setMorningDhikr] = useState(false);
   const [eveningDhikr, setEveningDhikr] = useState(false);
 
+  // ── Load ──
   useEffect(() => {
     const loadData = async () => {
       try {
-        const today = new Date().toISOString().split("T")[0];
+        // Get today's date in local timezone
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const today = `${year}-${month}-${day}`;
+
         const stored = await storage.get(`daily-tasks:${username}:${today}`);
         if (stored) {
           const data = JSON.parse(stored.value);
           setPrayers(
-            data.prayers || PRAYERS.map((name) => ({ name, completed: false })),
+            data.prayers || PRAYERS.map((n) => ({ name: n, completed: false })),
           );
-          setQuranPages(data.quranPages || 0);
+          setQuranPages(data.quranPages ?? 0);
           setCustomTasks(data.customTasks || []);
-          setMorningDhikr(data.morningDhikr || false);
-          setEveningDhikr(data.eveningDhikr || false);
+          setMorningDhikr(data.morningDhikr ?? false);
+          setEveningDhikr(data.eveningDhikr ?? false);
         }
       } catch {
-        /* no stored tasks */
+        // no stored tasks
       }
     };
     loadData();
   }, [username]);
 
+  // ── Save ──
   useEffect(() => {
     const saveData = async () => {
       try {
-        const today = new Date().toISOString().split("T")[0];
+        // Get today's date in local timezone
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const today = `${year}-${month}-${day}`;
+
         await storage.set(
           `daily-tasks:${username}:${today}`,
           JSON.stringify({
@@ -96,7 +119,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
           }),
         );
       } catch {
-        /* failed to save */
+        // failed to save
       }
     };
     saveData();
@@ -132,19 +155,18 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
 
   const completedPrayers = prayers.filter((p) => p.completed).length;
   const completedTasks = customTasks.filter((t) => t.completed).length;
-
-  const totalProgress = calcProgress({
-    completedPrayers,
+  const totalProgress = calcProgress(
+    prayers,
     morningDhikr,
     eveningDhikr,
     quranPages,
-  });
+  );
 
   return (
     <div className="flex flex-col gap-2 space-y-6">
       {/* Progress Overview */}
       <div
-        className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} rounded-xl p-5 shadow-lg border`}
+        className={`p-8 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} rounded-xl p-5 shadow-lg border`}
       >
         <div className="flex items-center gap-3 mb-4">
           <Calendar
@@ -190,7 +212,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
           <p
             className={`text-xs mt-2 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
           >
-            Based on prayers, Quran & Adhkar
+            Based on prayers, adhkar & Quran reading • Custom tasks not counted
           </p>
         </div>
       </div>
@@ -207,7 +229,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
             Daily Prayers
           </h3>
           <span
-            className={`text-sm flex items-center justify-center w-8 h-8 font-semibold rounded-full ${darkMode ? "bg-gray-700 text-amber-500" : "bg-[#EAD7C0] text-[#8B4545]"}`}
+            className={`text-sm flex items-center justify-center w-8 h-8 font-semibold px-2.5 py-1 rounded-full ${darkMode ? "bg-gray-700 text-amber-500" : "bg-[#EAD7C0] text-[#8B4545]"}`}
           >
             {completedPrayers}/5
           </span>
@@ -250,7 +272,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
         <p
           className={`text-xs mb-4 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
         >
-          Goal: 4 pages for full score (20 pts)
+          4+ pages = full credit in progress score
         </p>
         <div className="flex items-center justify-center gap-4">
           <button
@@ -298,52 +320,63 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
           </span>
         </div>
         <div className="space-y-2">
-          {[
-            {
-              label: "Morning Adhkar",
-              value: morningDhikr,
-              set: setMorningDhikr,
-            },
-            {
-              label: "Evening Adhkar",
-              value: eveningDhikr,
-              set: setEveningDhikr,
-            },
-          ].map(({ label, value, set }) => (
-            <button
-              key={label}
-              onClick={() => set(!value)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"} ${value ? "opacity-60" : ""}`}
+          <button
+            onClick={() => setMorningDhikr(!morningDhikr)}
+            className={`w-full flex items-center gap-3 p-3 rounded-lg ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"} ${morningDhikr ? "opacity-60" : ""}`}
+          >
+            {morningDhikr ? (
+              <CheckCircle2 className="text-green-500" size={20} />
+            ) : (
+              <Circle
+                className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
+                size={20}
+              />
+            )}
+            <span
+              className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${morningDhikr ? "line-through" : ""}`}
             >
-              {value ? (
-                <CheckCircle2 className="text-green-500" size={20} />
-              ) : (
-                <Circle
-                  className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
-                  size={20}
-                />
-              )}
-              <span
-                className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${value ? "line-through" : ""}`}
-              >
-                {label}
-              </span>
-            </button>
-          ))}
+              Morning Adhkar
+            </span>
+          </button>
+          <button
+            onClick={() => setEveningDhikr(!eveningDhikr)}
+            className={`w-full flex items-center gap-3 p-3 rounded-lg ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"} ${eveningDhikr ? "opacity-60" : ""}`}
+          >
+            {eveningDhikr ? (
+              <CheckCircle2 className="text-green-500" size={20} />
+            ) : (
+              <Circle
+                className={darkMode ? "text-gray-400" : "text-[#8B4545]"}
+                size={20}
+              />
+            )}
+            <span
+              className={`text-base ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"} ${eveningDhikr ? "line-through" : ""}`}
+            >
+              Evening Adhkar
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* Custom Tasks — NOT counted in progress % */}
+      {/* Custom Tasks */}
       <div
         className={`${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} rounded-xl p-5 shadow-lg border`}
       >
-        <div className="flex items-center justify-between mb-1">
-          <h3
-            className={`text-lg font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
-            style={{ fontFamily: "Playfair Display, serif" }}
-          >
-            Custom Tasks
-          </h3>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3
+              className={`text-lg font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
+              style={{ fontFamily: "Playfair Display, serif" }}
+            >
+              Custom Tasks
+            </h3>
+            <p
+              className={`text-xs ${darkMode ? "text-gray-500" : "text-gray-400"}`}
+            >
+              Personal goals — not counted in progress %
+            </p>
+          </div>
           {customTasks.length > 0 && (
             <span
               className={`text-sm font-semibold px-2.5 py-1 rounded-full ${darkMode ? "bg-gray-700 text-amber-500" : "bg-[#EAD7C0] text-[#8B4545]"}`}
@@ -352,11 +385,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
             </span>
           )}
         </div>
-        <p
-          className={`text-xs mb-4 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
-        >
-          Personal extras — not included in your daily progress %
-        </p>
+
         <div className="flex gap-2 mb-4">
           <input
             type="text"
@@ -374,6 +403,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
             <Plus size={18} />
           </button>
         </div>
+
         <div className="space-y-2">
           {customTasks.length === 0 ? (
             <p
