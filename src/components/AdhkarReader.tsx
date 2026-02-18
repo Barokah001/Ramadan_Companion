@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { CheckCircle, RotateCcw, BookOpen, Sun, Moon } from "lucide-react";
 import { morningAdhkar, eveningAdhkar, type DhikrItem } from "../lib/adhkar";
 import { storage } from "../lib/supabase";
+import { getTodayLocalString } from "../utils/dateUtils";
 
 interface AdhkarReaderProps {
   darkMode?: boolean;
@@ -36,12 +37,8 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
 
     const loadProgress = async () => {
       try {
-        // Get today's date in local timezone
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const today = `${year}-${month}-${day}`;
+        const today = getTodayLocalString();
+
 
         const key = `adhkar-${activeTab}-${today}`;
         const stored = await storage.get(key);
@@ -71,12 +68,7 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
 
     const saveProgress = async () => {
       try {
-        // Get today's date in local timezone
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const today = `${year}-${month}-${day}`;
+        const today = getTodayLocalString();
 
         const key = `adhkar-${activeTab}-${today}`;
         await storage.set(key, JSON.stringify(progress));
@@ -123,12 +115,7 @@ export const AdhkarReader: React.FC<AdhkarReaderProps> = ({
     loadedRef.current = true; // allow save after manual reset
     setProgress(EMPTY_PROGRESS);
 
-    // Get today's date in local timezone
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const today = `${year}-${month}-${day}`;
+   const today = getTodayLocalString();
 
     // Explicitly clear storage for this tab/day
     const key = `adhkar-${activeTab}-${today}`;

@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, Calendar } from "lucide-react";
 import { storage } from "../lib/supabase";
+import { getTodayLocalString } from "../utils/dateUtils";
 
 interface CustomTask {
   id: string;
@@ -72,12 +73,8 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Get today's date in local timezone
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const today = `${year}-${month}-${day}`;
+        const today = getTodayLocalString();
+
 
         const stored = await storage.get(`daily-tasks:${username}:${today}`);
         if (stored) {
@@ -101,12 +98,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
   useEffect(() => {
     const saveData = async () => {
       try {
-        // Get today's date in local timezone
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const today = `${year}-${month}-${day}`;
+        const today = getTodayLocalString();
 
         await storage.set(
           `daily-tasks:${username}:${today}`,
