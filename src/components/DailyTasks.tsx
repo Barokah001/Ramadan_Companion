@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/DailyTasks.tsx - FIXED: progress % excludes custom tasks
+// src/components/DailyTasks.tsx - NEW: balanced progress with custom tasks, always room to improve
 
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, Calendar } from "lucide-react";
 import { storage } from "../lib/supabase";
 import { getTodayLocalString } from "../utils/dateUtils";
+import {
+  calculateProgress,
+  getProgressBreakdown,
+} from "../utils/progressCalculation";
 
 interface CustomTask {
   id: string;
@@ -25,37 +29,6 @@ interface DailyTasksProps {
 
 const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
-// ─── Progress is based ONLY on required tasks ───
-// Weights (must sum to 100):
-//   Prayers      : 5 prayers × 7 pts each = 35 pts
-//   Morning Dhikr: 15 pts
-//   Evening Dhikr: 15 pts
-//   Quran Pages  : up to 20 pts (capped at 4 pages = full credit)
-//   Custom tasks : NOT included in the percentage
-// Total possible: 85 pts → normalised to 100%
-const PRAYER_WEIGHT = 35; // 5 prayers, 7 pts each
-const MORNING_WEIGHT = 15;
-const EVENING_WEIGHT = 15;
-const QURAN_WEIGHT = 20; // 4+ pages = full credit
-const QURAN_TARGET = 4; // pages for full Quran credit
-const REQUIRED_TOTAL =
-  PRAYER_WEIGHT + MORNING_WEIGHT + EVENING_WEIGHT + QURAN_WEIGHT; // = 85
-
-const calcProgress = (
-  prayers: Prayer[],
-  morningDhikr: boolean,
-  eveningDhikr: boolean,
-  quranPages: number,
-): number => {
-  const prayerScore =
-    (prayers.filter((p) => p.completed).length / 5) * PRAYER_WEIGHT;
-  const morningScore = morningDhikr ? MORNING_WEIGHT : 0;
-  const eveningScore = eveningDhikr ? EVENING_WEIGHT : 0;
-  const quranScore = Math.min(quranPages / QURAN_TARGET, 1) * QURAN_WEIGHT;
-  const raw = prayerScore + morningScore + eveningScore + quranScore;
-  return Math.round((raw / REQUIRED_TOTAL) * 100);
-};
-
 export const DailyTasks: React.FC<DailyTasksProps> = ({
   darkMode = false,
   username,
@@ -74,8 +47,6 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
     const loadData = async () => {
       try {
         const today = getTodayLocalString();
-
-
         const stored = await storage.get(`daily-tasks:${username}:${today}`);
         if (stored) {
           const data = JSON.parse(stored.value);
@@ -99,7 +70,6 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
     const saveData = async () => {
       try {
         const today = getTodayLocalString();
-
         await storage.set(
           `daily-tasks:${username}:${today}`,
           JSON.stringify({
@@ -147,11 +117,14 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
 
   const completedPrayers = prayers.filter((p) => p.completed).length;
   const completedTasks = customTasks.filter((t) => t.completed).length;
-  const totalProgress = calcProgress(
+
+  // NEW: Use the balanced progress calculation
+  const totalProgress = calculateProgress(
     prayers,
     morningDhikr,
     eveningDhikr,
     quranPages,
+    customTasks,
   );
 
   return (
@@ -204,7 +177,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
           <p
             className={`text-xs mt-2 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
           >
-            Based on prayers, adhkar & Quran reading • Custom tasks not counted
+            Prayers 40% • Adhkar 24% • Quran 28% • Custom Tasks 8%
           </p>
         </div>
       </div>
@@ -264,7 +237,8 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
         <p
           className={`text-xs mb-4 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
         >
-          4+ pages = full credit in progress score
+          1% per page, max 28 pages for full credit • The more you read, the
+          higher your score!
         </p>
         <div className="flex items-center justify-center gap-4">
           <button
@@ -366,7 +340,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
             <p
               className={`text-xs ${darkMode ? "text-gray-500" : "text-gray-400"}`}
             >
-              Personal goals — not counted in progress %
+              Personal goals — completion rate adds 8% to your score
             </p>
           </div>
           {customTasks.length > 0 && (

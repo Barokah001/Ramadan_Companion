@@ -1,41 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/RamadanSummary.tsx - FIXED: correct progress % (no custom tasks)
+// src/components/RamadanSummary.tsx - NEW: balanced progress + FIXED Juz (20 pages = 1 Juz)
 
 import React, { useState, useEffect } from "react";
-import {
-  Heart,
-  BookOpen,
-  CheckCircle,
-  Loader,
-  Star,
-  Moon,
-} from "lucide-react";
+import { Heart, BookOpen, CheckCircle, Loader, Star, Moon } from "lucide-react";
 import { storage } from "../lib/supabase";
 import { formatLocalDate, parseLocalDate } from "../utils/dateUtils";
-
-// ─── Same weights as DailyTasks / TenDaySummary ──────────────────────────────
-const PRAYER_WEIGHT = 35;
-const MORNING_WEIGHT = 15;
-const EVENING_WEIGHT = 15;
-const QURAN_WEIGHT = 20;
-const QURAN_TARGET = 4;
-const REQUIRED_TOTAL =
-  PRAYER_WEIGHT + MORNING_WEIGHT + EVENING_WEIGHT + QURAN_WEIGHT; // 85
-
-const calcProgress = (
-  prayers: number,
-  morningDhikr: boolean,
-  eveningDhikr: boolean,
-  quranPages: number,
-): number => {
-  const raw =
-    (prayers / 5) * PRAYER_WEIGHT +
-    (morningDhikr ? MORNING_WEIGHT : 0) +
-    (eveningDhikr ? EVENING_WEIGHT : 0) +
-    Math.min(quranPages / QURAN_TARGET, 1) * QURAN_WEIGHT;
-  return Math.round((raw / REQUIRED_TOTAL) * 100);
-};
-// ─────────────────────────────────────────────────────────────────────────────
+import { calculateProgress, pagesToJuz } from "../utils/progressCalculation";
 
 interface RamadanDay {
   date: string;
@@ -45,6 +15,18 @@ interface RamadanDay {
   eveningDhikr: boolean;
   totalProgress: number;
   dayNumber: number;
+}
+
+interface Prayer {
+  name: string;
+  completed: boolean;
+}
+
+interface CustomTask {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
 }
 
 interface RamadanSummaryProps {
@@ -72,35 +54,36 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
     setLoading(true);
     const data: RamadanDay[] = [];
 
-    // Parse as LOCAL date to avoid timezone issues
     const [year, month, day] = ramadanStartDate.split("-").map(Number);
     const startDate = new Date(year, month - 1, day);
 
     for (let i = 0; i < ramadanDays; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
-
-    const dateStr = formatLocalDate(date);
-
+      const dateStr = formatLocalDate(date);
 
       try {
         const stored = await storage.get(`daily-tasks:${username}:${dateStr}`);
         if (stored) {
           const d = JSON.parse(stored.value);
           const prayerCount =
-            d.prayers?.filter((p: { completed: boolean }) => p.completed)
-              .length || 0;
+            d.prayers?.filter((p: Prayer) => p.completed).length || 0;
+
+          // Get custom tasks for calculation
+          const customTasksArray: CustomTask[] = d.customTasks || [];
+
           data.push({
             date: dateStr,
             prayers: prayerCount,
             quranPages: d.quranPages || 0,
             morningDhikr: d.morningDhikr || false,
             eveningDhikr: d.eveningDhikr || false,
-            totalProgress: calcProgress(
+            totalProgress: calculateProgress(
               prayerCount,
               d.morningDhikr || false,
               d.eveningDhikr || false,
               d.quranPages || 0,
+              customTasksArray,
             ),
             dayNumber: i + 1,
           });
@@ -137,7 +120,6 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
       month: "short",
       day: "numeric",
     });
-
 
   const totalPrayers = allDays.reduce((s, d) => s + d.prayers, 0);
   const maxPrayers = ramadanDays * 5;
@@ -232,7 +214,7 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
             {badge.text}
           </div>
           <p className="text-white/60 text-sm mt-4">
-            Progress based on prayers, adhkar & Quran reading
+            Prayers 40% • Adhkar 24% • Quran 28% • Custom 8%
           </p>
         </div>
       </div>
@@ -252,7 +234,7 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
             icon: <BookOpen className="mx-auto mb-3 text-blue-500" size={32} />,
             value: totalQuran,
             label: "Quran Pages",
-            sub: `${(totalQuran / 6.04).toFixed(1)} Juz`,
+            sub: `${pagesToJuz(totalQuran)} Juz`, // FIXED: Using correct calculation
           },
           {
             icon: <Heart className="mx-auto mb-3 text-purple-500" size={32} />,
@@ -431,8 +413,8 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
         <p
           className={`mt-4 text-sm ${darkMode ? "text-gray-500" : "text-gray-400"}`}
         >
-          Average based on prayers (35%), adhkar (30%) and Quran reading (20%) —
-          custom tasks not included
+          Read {totalQuran} pages ({pagesToJuz(totalQuran)} Juz) • 20 pages = 1
+          Juz
         </p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/TenDaySummary.tsx - FIXED: all 3 periods, coming-soon, correct %
+// src/components/TenDaySummary.tsx - NEW: balanced progress + fixed Juz calculation
 
 import React, { useState, useEffect } from "react";
 import {
@@ -20,38 +20,17 @@ import {
 } from "lucide-react";
 import { storage } from "../lib/supabase";
 import { formatLocalDate, parseLocalDate } from "../utils/dateUtils";
-
-// ─── Same weights as DailyTasks ───────────────────────────────────────────────
-const PRAYER_WEIGHT = 35;
-const MORNING_WEIGHT = 15;
-const EVENING_WEIGHT = 15;
-const QURAN_WEIGHT = 20;
-const QURAN_TARGET = 4;
-const REQUIRED_TOTAL =
-  PRAYER_WEIGHT + MORNING_WEIGHT + EVENING_WEIGHT + QURAN_WEIGHT; // 85
-
-const calcProgress = (
-  prayers: number, // completed count (0-5)
-  morningDhikr: boolean,
-  eveningDhikr: boolean,
-  quranPages: number,
-): number => {
-  const raw =
-    (prayers / 5) * PRAYER_WEIGHT +
-    (morningDhikr ? MORNING_WEIGHT : 0) +
-    (eveningDhikr ? EVENING_WEIGHT : 0) +
-    Math.min(quranPages / QURAN_TARGET, 1) * QURAN_WEIGHT;
-  return Math.round((raw / REQUIRED_TOTAL) * 100);
-};
-// ─────────────────────────────────────────────────────────────────────────────
+import { calculateProgress, pagesToJuz } from "../utils/progressCalculation";
 
 interface DayData {
   date: string;
-  dayNumber: number; // 1-based day within Ramadan
+  dayNumber: number;
   prayers: number;
   quranPages: number;
   morningDhikr: boolean;
   eveningDhikr: boolean;
+  customTasksCompleted: number;
+  customTasksTotal: number;
   totalProgress: number;
 }
 
@@ -303,15 +282,14 @@ const ComingSoonCard: React.FC<{
 interface TenDaySummaryProps {
   darkMode?: boolean;
   username: string;
-  ramadanStartDate: string; // "YYYY-MM-DD"
-  ramadanDays?: number; // 29 or 30 (default 30)
+  ramadanStartDate: string;
+  ramadanDays?: number;
 }
 
-// ── Period definition ──
 interface Period {
-  label: string; // e.g. "First 10 Days"
+  label: string;
   periodNumber: 1 | 2 | 3;
-  startDay: number; // 1-based day in Ramadan
+  startDay: number;
   endDay: number;
 }
 
@@ -326,30 +304,24 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
   const [loadingPeriod, setLoadingPeriod] = useState<number | null>(null);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
 
-  // Build period definitions dynamically (handles 29 or 30 day Ramadan)
   const periods: Period[] = [
     { label: "First 10 Days", periodNumber: 1, startDay: 1, endDay: 10 },
     { label: "Second 10 Days", periodNumber: 2, startDay: 11, endDay: 20 },
     { label: "Last Days", periodNumber: 3, startDay: 21, endDay: ramadanDays },
   ];
 
-  // ── FIX: Use local dates to avoid timezone offset issues ──
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Parse ramadanStartDate as LOCAL date (not UTC)
   const [year, month, day] = ramadanStartDate.split("-").map(Number);
-  const ramadanStart = new Date(year, month - 1, day); // month is 0-indexed
+  const ramadanStart = new Date(year, month - 1, day);
   ramadanStart.setHours(0, 0, 0, 0);
 
-  // Which Ramadan day are we on today? (1-based; 0 = before Ramadan)
   const todayRamadanDay =
     Math.floor((today.getTime() - ramadanStart.getTime()) / 86400000) + 1;
 
-  // A period is "available" if its first day has been reached
   const isPeriodAvailable = (p: Period) => todayRamadanDay >= p.startDay;
 
-  // Get the calendar date for a given Ramadan day number
   const ramadanDayToDate = (dayNum: number): Date => {
     const d = new Date(ramadanStart);
     d.setDate(d.getDate() + dayNum - 1);
@@ -357,7 +329,7 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
   };
 
   const formatDate = (dateStr: string, opts?: Intl.DateTimeFormatOptions) => {
-  const date = parseLocalDate(dateStr);
+    const date = parseLocalDate(dateStr);
     return date.toLocaleDateString(
       "en-US",
       opts ?? { weekday: "long", month: "long", day: "numeric" },
@@ -370,9 +342,8 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
       day: "numeric",
     });
 
-  // Load data for a given period (lazy — only loads when that tab is shown)
   const loadPeriodData = async (period: Period) => {
-    if (periodsData[period.periodNumber]) return; // already loaded
+    if (periodsData[period.periodNumber]) return;
     setLoadingPeriod(period.periodNumber);
 
     const data: DayData[] = [];
@@ -380,13 +351,19 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
       const dateObj = ramadanDayToDate(day);
       const dateStr = formatLocalDate(dateObj);
 
-
       try {
         const stored = await storage.get(`daily-tasks:${username}:${dateStr}`);
         if (stored) {
           const d = JSON.parse(stored.value);
           const prayerCount =
             d.prayers?.filter((p: Prayer) => p.completed).length || 0;
+          const customCompleted =
+            d.customTasks?.filter((t: CustomTask) => t.completed).length || 0;
+          const customTotal = d.customTasks?.length || 0;
+
+          // Create temporary custom tasks array for calculation
+          const customTasksArray = d.customTasks || [];
+
           data.push({
             date: dateStr,
             dayNumber: day,
@@ -394,11 +371,14 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
             quranPages: d.quranPages || 0,
             morningDhikr: d.morningDhikr || false,
             eveningDhikr: d.eveningDhikr || false,
-            totalProgress: calcProgress(
+            customTasksCompleted: customCompleted,
+            customTasksTotal: customTotal,
+            totalProgress: calculateProgress(
               prayerCount,
               d.morningDhikr || false,
               d.eveningDhikr || false,
               d.quranPages || 0,
+              customTasksArray,
             ),
           });
         } else {
@@ -409,6 +389,8 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
             quranPages: 0,
             morningDhikr: false,
             eveningDhikr: false,
+            customTasksCompleted: 0,
+            customTasksTotal: 0,
             totalProgress: 0,
           });
         }
@@ -420,6 +402,8 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
           quranPages: 0,
           morningDhikr: false,
           eveningDhikr: false,
+          customTasksCompleted: 0,
+          customTasksTotal: 0,
           totalProgress: 0,
         });
       }
@@ -429,7 +413,6 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
     setLoadingPeriod(null);
   };
 
-  // When active period changes, load its data (if the period is available)
   useEffect(() => {
     const period = periods.find((p) => p.periodNumber === activePeriod)!;
     if (isPeriodAvailable(period)) loadPeriodData(period);
@@ -437,7 +420,6 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePeriod, username, ramadanStartDate]);
 
-  // Load first period on mount
   useEffect(() => {
     const firstAvailable = periods.find((p) => isPeriodAvailable(p));
     if (firstAvailable) {
@@ -643,7 +625,7 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
               <div
                 className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
               >
-                Pages read
+                {pagesToJuz(totalQuran)} Juz
               </div>
             </div>
             <div
@@ -793,7 +775,7 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
             <p
               className={`mt-2 text-sm ${darkMode ? "text-gray-500" : "text-gray-400"}`}
             >
-              Progress based on prayers, adhkar & Quran reading
+              Prayers 40% • Adhkar 24% • Quran 28% • Custom 8%
             </p>
           </div>
         </>
