@@ -21,7 +21,7 @@ import {
 import { storage } from "../lib/supabase";
 import { formatLocalDate, parseLocalDate } from "../utils/dateUtils";
 import { calculateProgress } from "../utils/progressCalculation";
-import { formatQuranProgressShort } from "../utils/quranCalculations";
+import { formatQuranProgressShort } from "../utils/quranCalculation";
 
 interface DayData {
   date: string;
