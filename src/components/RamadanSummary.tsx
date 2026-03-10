@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-// src/components/RamadanSummary.tsx - NEW: balanced progress + FIXED Juz (20 pages = 1 Juz)
+// src/components/RamadanSummary.tsx - 
 
 import React, { useState, useEffect } from "react";
 import {
