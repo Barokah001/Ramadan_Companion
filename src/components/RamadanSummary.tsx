@@ -2,10 +2,18 @@
 // src/components/RamadanSummary.tsx - NEW: balanced progress + FIXED Juz (20 pages = 1 Juz)
 
 import React, { useState, useEffect } from "react";
-import { Heart, BookOpen, CheckCircle, Loader, Star, Moon } from "lucide-react";
+import {
+  Heart,
+  BookOpen,
+  CheckCircle,
+  Loader,
+  Star,
+  Moon,
+} from "lucide-react";
 import { storage } from "../lib/supabase";
 import { formatLocalDate, parseLocalDate } from "../utils/dateUtils";
-import { calculateProgress, pagesToJuz } from "../utils/progressCalculation";
+import { calculateProgress } from "../utils/progressCalculation";
+import { formatQuranProgress, formatQuranProgressShort } from "../utils/quranCalculations";
 
 interface RamadanDay {
   date: string;
@@ -68,7 +76,7 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
           const d = JSON.parse(stored.value);
           const prayerCount =
             d.prayers?.filter((p: Prayer) => p.completed).length || 0;
-
+          
           // Get custom tasks for calculation
           const customTasksArray: CustomTask[] = d.customTasks || [];
 
@@ -234,7 +242,7 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
             icon: <BookOpen className="mx-auto mb-3 text-blue-500" size={32} />,
             value: totalQuran,
             label: "Quran Pages",
-            sub: `${pagesToJuz(totalQuran)} Juz`, // FIXED: Using correct calculation
+            sub: formatQuranProgressShort(totalQuran),
           },
           {
             icon: <Heart className="mx-auto mb-3 text-purple-500" size={32} />,
@@ -413,8 +421,7 @@ export const RamadanSummary: React.FC<RamadanSummaryProps> = ({
         <p
           className={`mt-4 text-sm ${darkMode ? "text-gray-500" : "text-gray-400"}`}
         >
-          Read {totalQuran} pages ({pagesToJuz(totalQuran)} Juz) • 20 pages = 1
-          Juz
+          {formatQuranProgress(totalQuran)} • 604 pages = 1 Complete Qur'an
         </p>
       </div>
     </div>
