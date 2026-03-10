@@ -5,10 +5,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Trash2, CheckCircle2, Circle, Calendar } from "lucide-react";
 import { storage } from "../lib/supabase";
 import { getTodayLocalString } from "../utils/dateUtils";
-import {
-  calculateProgress,
-  getProgressBreakdown,
-} from "../utils/progressCalculation";
+import { calculateProgress, getProgressBreakdown } from "../utils/progressCalculation";
 
 interface CustomTask {
   id: string;
@@ -117,7 +114,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
 
   const completedPrayers = prayers.filter((p) => p.completed).length;
   const completedTasks = customTasks.filter((t) => t.completed).length;
-
+  
   // NEW: Use the balanced progress calculation
   const totalProgress = calculateProgress(
     prayers,
@@ -237,8 +234,7 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
         <p
           className={`text-xs mb-4 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
         >
-          1% per page, max 28 pages for full credit • The more you read, the
-          higher your score!
+          1% per page, max 28 pages for full credit • The more you read, the higher your score!
         </p>
         <div className="flex items-center justify-center gap-4">
           <button
@@ -248,11 +244,15 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
             −
           </button>
           <div className="flex-1 max-w-xs text-center">
-            <div
-              className={`text-4xl font-bold ${darkMode ? "text-gray-100" : "text-[#5C2E2E]"}`}
-            >
-              {quranPages}
-            </div>
+            <input
+              type="number"
+              value={quranPages}
+              onChange={(e) => {
+                const val = parseInt(e.target.value) || 0;
+                setQuranPages(Math.max(0, val));
+              }}
+              className={`w-full text-4xl font-bold text-center ${darkMode ? "text-gray-100 bg-gray-800" : "text-[#5C2E2E] bg-white"} border-none focus:outline-none focus:ring-2 focus:ring-[#8B4545] rounded-lg p-2`}
+            />
             <div
               className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
             >
