@@ -246,12 +246,13 @@ export const DailyTasks: React.FC<DailyTasksProps> = ({
           <div className="flex-1 max-w-xs text-center">
             <input
               type="number"
-              value={quranPages}
+              value={quranPages === 0 ? '' : quranPages}
               onChange={(e) => {
-                const val = parseInt(e.target.value) || 0;
+                const val = e.target.value === '' ? 0 : parseInt(e.target.value);
                 setQuranPages(Math.max(0, val));
               }}
-              className={`w-full text-4xl font-bold text-center ${darkMode ? "text-gray-100 bg-gray-800" : "text-[#5C2E2E] bg-white"} border-none focus:outline-none focus:ring-2 focus:ring-[#8B4545] rounded-lg p-2`}
+              placeholder="0"
+              className={`w-full text-4xl font-bold text-center ${darkMode ? "text-gray-100 bg-gray-800 placeholder:text-gray-600" : "text-[#5C2E2E] bg-white placeholder:text-gray-300"} border-none focus:outline-none focus:ring-2 focus:ring-[#8B4545] rounded-lg p-2`}
             />
             <div
               className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
