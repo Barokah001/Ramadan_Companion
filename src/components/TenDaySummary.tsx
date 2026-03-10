@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import { storage } from "../lib/supabase";
 import { formatLocalDate, parseLocalDate } from "../utils/dateUtils";
-import { calculateProgress, pagesToJuz } from "../utils/progressCalculation";
+import { calculateProgress } from "../utils/progressCalculation";
+import { formatQuranProgressShort } from "../utils/quranCalculations";
 
 interface DayData {
   date: string;
@@ -625,7 +626,7 @@ export const TenDaySummary: React.FC<TenDaySummaryProps> = ({
               <div
                 className={`text-sm ${darkMode ? "text-gray-400" : "text-[#8B4545]"}`}
               >
-                {pagesToJuz(totalQuran)} Juz
+                {formatQuranProgressShort(totalQuran)}
               </div>
             </div>
             <div
