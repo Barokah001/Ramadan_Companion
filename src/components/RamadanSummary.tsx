@@ -13,7 +13,7 @@ import {
 import { storage } from "../lib/supabase";
 import { formatLocalDate, parseLocalDate } from "../utils/dateUtils";
 import { calculateProgress } from "../utils/progressCalculation";
-import { formatQuranProgress, formatQuranProgressShort } from "../utils/quranCalculations";
+import { formatQuranProgress, formatQuranProgressShort } from "../utils/quranCalculation";
 
 interface RamadanDay {
   date: string;
